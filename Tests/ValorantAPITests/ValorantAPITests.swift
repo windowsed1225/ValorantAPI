@@ -3,7 +3,5 @@ import XCTest
 import ValorantAPI
 
 final class ValorantAPITests: XCTestCase {
-	func testExample() {
-		fatalError("TODO")
-	}
+	func testExample() {}
 }

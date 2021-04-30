@@ -31,7 +31,10 @@ let package = Package(
 		),
 		.testTarget(
 			name: "ValorantAPITests",
-			dependencies: ["ValorantAPI"]
+			dependencies: ["ValorantAPI"],
+			resources: [
+				.copy("examples"),
+			]
 		),
 	]
 )
