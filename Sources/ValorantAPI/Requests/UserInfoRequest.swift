@@ -10,7 +10,7 @@ struct UserInfoRequest: JSONJSONRequest {
 }
 
 extension Client {
-	func getUserInfo() -> AnyPublisher<UserInfo, Error> {
+	public func getUserInfo() -> AnyPublisher<UserInfo, Error> {
 		send(UserInfoRequest())
 	} 
 }

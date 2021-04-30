@@ -1,20 +1,31 @@
 import Foundation
 
-struct UserInfo: Codable {
-	var account: Account
-	var id: UUID
+public struct UserInfo: Codable {
+	public var account: Account
+	public var id: UUID
+	
+	public init(account: Account, id: UUID) {
+		self.account = account
+		self.id = id
+	}
 	
 	private enum CodingKeys: String, CodingKey {
 		case account = "acct"
 		case id = "sub"
 	}
 	
-	struct Account: Codable {
-		var gameName: String
-		var tagLine: String
-		var createdAt: Date
+	public struct Account: Codable {
+		public var gameName: String
+		public var tagLine: String
+		public var createdAt: Date
 		
-		var name: String {
+		public init(gameName: String, tagLine: String, createdAt: Date) {
+			self.gameName = gameName
+			self.tagLine = tagLine
+			self.createdAt = createdAt
+		}
+		
+		public var name: String {
 			"\(gameName) #\(tagLine)"
 		}
 	}

@@ -18,6 +18,30 @@ public struct CompetitiveUpdate: Codable, Identifiable {
 	public var eloBeforeUpdate: Int { tierBeforeUpdate * 100 + tierProgressBeforeUpdate }
 	public var eloAfterUpdate: Int { tierAfterUpdate * 100 + tierProgressAfterUpdate }
 	
+	public init(
+		id: UUID,
+		mapID: MapID,
+		startTime: Date,
+		tierBeforeUpdate: Int,
+		tierAfterUpdate: Int,
+		tierProgressBeforeUpdate: Int,
+		tierProgressAfterUpdate: Int,
+		ratingEarned: Int,
+		performanceBonus: Int,
+		afkPenalty: Int
+	) {
+		self.id = id
+		self.mapID = mapID
+		self.startTime = startTime
+		self.tierBeforeUpdate = tierBeforeUpdate
+		self.tierAfterUpdate = tierAfterUpdate
+		self.tierProgressBeforeUpdate = tierProgressBeforeUpdate
+		self.tierProgressAfterUpdate = tierProgressAfterUpdate
+		self.ratingEarned = ratingEarned
+		self.performanceBonus = performanceBonus
+		self.afkPenalty = afkPenalty
+	}
+	
 	private enum CodingKeys: String, CodingKey {
 		case id = "MatchID"
 		case mapID = "MapID"

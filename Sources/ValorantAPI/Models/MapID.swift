@@ -4,7 +4,7 @@ import HandyOperators
 public struct MapID {
 	public var path: String
 	
-	static let mapPaths: [(path: String, map: String)] = [
+	public static let mapPaths: [(path: String, map: String)] = [
 		("Bonsai", "split"),
 		("Triad", "haven"),
 		("Duality", "bind"),
@@ -18,6 +18,10 @@ public struct MapID {
 	
 	public var mapName: String? {
 		Self.mapNames[path]
+	}
+	
+	public init(path: String) {
+		self.path = path
 	}
 }
 
