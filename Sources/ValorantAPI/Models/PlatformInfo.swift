@@ -1,6 +1,6 @@
 import Foundation
 
-public struct PlatformInfo: Encodable {
+public struct PlatformInfo: Codable {
 	static let supportedExample = Self(
 		type: "PC",
 		os: "Windows",

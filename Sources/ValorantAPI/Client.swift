@@ -3,12 +3,13 @@ import Combine
 import HandyOperators
 
 public final class Client: Identifiable {
-	let requestEncoder = JSONEncoder() <- {
+	static let requestEncoder = JSONEncoder() <- {
 		$0.keyEncodingStrategy = .convertToSnakeCase
 	}
-	let responseDecoder = JSONDecoder() <- {
+	static let responseDecoder = JSONDecoder() <- {
 		$0.keyDecodingStrategy = .convertFromSnakeCase
 		$0.dateDecodingStrategy = .millisecondsSince1970
+		$0.userInfo[.isDecodingFromRiot] = true
 	}
 	
 	public let region: Region
@@ -43,8 +44,8 @@ public final class Client: Identifiable {
 				session.dataTaskPublisher(for: $0).mapError { $0 }
 			}
 			//.map { $0 <- { print("response: \(String(bytes: $0.data, encoding: .utf8)!)") } }
-			.tryMap { [responseDecoder] in
-				try request.decodeResponse(from: $0.data, using: responseDecoder)
+			.tryMap {
+				try request.decodeResponse(from: $0.data, using: Self.responseDecoder)
 			}
 			.eraseToAnyPublisher()
 	}
@@ -63,7 +64,7 @@ public final class Client: Identifiable {
 		}
 		
 		return try URLRequest(url: components.url!) <- { rawRequest in
-			try request.encode(to: &rawRequest, using: requestEncoder)
+			try request.encode(to: &rawRequest, using: Self.requestEncoder)
 			
 			//print("sending request to \(request.url)")
 			//rawRequest.httpBody.map { print("request: \(String(bytes: $0, encoding: .utf8)!)") }
@@ -84,5 +85,15 @@ public final class Client: Identifiable {
 			rawRequest.setValue(token, forHTTPHeaderField: "X-Riot-Entitlements-JWT")
 		}
 		rawRequest.setValue(Self.encodedPlatformInfo, forHTTPHeaderField: "X-Riot-ClientPlatform")
+	}
+}
+
+private extension CodingUserInfoKey {
+	static var isDecodingFromRiot = Self(rawValue: "isDecodingFromRiot")!
+}
+
+extension Decoder {
+	var isDecodingFromRiot: Bool {
+		(userInfo[.isDecodingFromRiot] as? Bool) ?? false
 	}
 }
