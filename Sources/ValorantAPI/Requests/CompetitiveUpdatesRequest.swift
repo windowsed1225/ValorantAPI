@@ -4,7 +4,6 @@ import HandyOperators
 import ArrayBuilder
 
 struct CompetitiveUpdatesRequest: GetJSONRequest, GameAPIRequest {
-	var region: Region
 	var userID: UUID
 	var startIndex = 0
 	var endIndex = 20
@@ -34,7 +33,6 @@ struct CompetitiveUpdatesRequest: GetJSONRequest, GameAPIRequest {
 extension Client {
 	public func getCompetitiveUpdates(userID: UUID, startIndex: Int = 0) -> AnyPublisher<[CompetitiveUpdate], Error> {
 		send(CompetitiveUpdatesRequest(
-			region: region,
 			userID: userID,
 			startIndex: startIndex, endIndex: startIndex + 20
 		))
