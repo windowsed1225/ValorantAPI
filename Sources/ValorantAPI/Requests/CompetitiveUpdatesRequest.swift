@@ -4,12 +4,12 @@ import HandyOperators
 import ArrayBuilder
 
 struct CompetitiveUpdatesRequest: GetJSONRequest, GameAPIRequest {
-	var userID: UUID
+	var userID: Player.ID
 	var startIndex = 0
 	var endIndex = 20
 	
 	var path: String {
-		"/mmr/v1/players/\(userID.uuidString.lowercased())/competitiveupdates"
+		"/mmr/v1/players/\(userID.apiValue)/competitiveupdates"
 	}
 	
 	func urlParams() -> [URLParameter] {
@@ -31,7 +31,7 @@ struct CompetitiveUpdatesRequest: GetJSONRequest, GameAPIRequest {
 }
 
 extension Client {
-	public func getCompetitiveUpdates(userID: UUID, startIndex: Int = 0) -> AnyPublisher<[CompetitiveUpdate], Error> {
+	public func getCompetitiveUpdates(userID: Player.ID, startIndex: Int = 0) -> AnyPublisher<[CompetitiveUpdate], Error> {
 		send(CompetitiveUpdatesRequest(
 			userID: userID,
 			startIndex: startIndex, endIndex: startIndex + 20

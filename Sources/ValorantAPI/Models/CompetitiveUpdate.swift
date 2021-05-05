@@ -1,7 +1,7 @@
 import Foundation
 
 public struct CompetitiveUpdate: Codable, Identifiable {
-	public var id: UUID
+	public var id: Match.ID
 	public var mapID: MapID
 	public var startTime: Date
 	public var tierBeforeUpdate: Int
@@ -19,7 +19,7 @@ public struct CompetitiveUpdate: Codable, Identifiable {
 	public var eloAfterUpdate: Int { tierAfterUpdate * 100 + tierProgressAfterUpdate }
 	
 	public init(
-		id: UUID,
+		id: Match.ID,
 		mapID: MapID,
 		startTime: Date,
 		tierBeforeUpdate: Int,

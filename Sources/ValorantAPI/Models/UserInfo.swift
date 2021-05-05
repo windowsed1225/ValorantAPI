@@ -2,9 +2,9 @@ import Foundation
 
 public struct UserInfo: Codable {
 	public var account: Account
-	public var id: UUID
+	public var id: Player.ID
 	
-	public init(account: Account, id: UUID) {
+	public init(account: Account, id: Player.ID) {
 		self.account = account
 		self.id = id
 	}

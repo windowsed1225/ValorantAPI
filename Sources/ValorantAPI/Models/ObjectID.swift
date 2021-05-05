@@ -6,8 +6,14 @@ public struct ObjectID<Object, RawValue>: Hashable where RawValue: Hashable {
 	public init(_ rawValue: RawValue) {
 		self.rawValue = rawValue
 	}
+}
+
+extension ObjectID where RawValue == UUID {
+	var apiValue: String {
+		rawValue.uuidString.lowercased()
+	}
 	
-	public init() where RawValue == UUID {
+	public init() {
 		self.rawValue = UUID()
 	}
 }

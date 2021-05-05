@@ -3,10 +3,10 @@ import Combine
 import HandyOperators
 
 public final class Client: Identifiable {
-	static let requestEncoder = JSONEncoder() <- {
+	public static let requestEncoder = JSONEncoder() <- {
 		$0.keyEncodingStrategy = .convertToSnakeCase
 	}
-	static let responseDecoder = JSONDecoder() <- {
+	public static let responseDecoder = JSONDecoder() <- {
 		$0.keyDecodingStrategy = .convertFromSnakeCase
 		$0.dateDecodingStrategy = .millisecondsSince1970
 		$0.userInfo[.isDecodingFromRiot] = true

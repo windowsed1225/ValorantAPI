@@ -4,13 +4,13 @@ import HandyOperators
 import ArrayBuilder
 
 struct MatchHistoryRequest: GetJSONRequest, GameAPIRequest {
-	var userID: UUID
+	var userID: Player.ID
 	var startIndex = 0
 	var endIndex = 20
 	var queue: QueueID?
 	
 	var path: String {
-		"/match-history/v1/history/\(userID.uuidString.lowercased())"
+		"/match-history/v1/history/\(userID.apiValue)"
 	}
 	
 	func urlParams() -> [URLParameter] {
@@ -31,7 +31,7 @@ struct MatchHistoryRequest: GetJSONRequest, GameAPIRequest {
 }
 
 extension Client {
-	public func getMatchHistory(userID: UUID, queue: QueueID? = nil, startIndex: Int = 0) -> AnyPublisher<[MatchHistoryEntry], Error> {
+	public func getMatchHistory(userID: Player.ID, queue: QueueID? = nil, startIndex: Int = 0) -> AnyPublisher<[MatchHistoryEntry], Error> {
 		send(MatchHistoryRequest(
 			userID: userID,
 			startIndex: startIndex, endIndex: startIndex + 20,

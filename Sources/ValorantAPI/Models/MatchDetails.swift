@@ -1,12 +1,14 @@
 import Foundation
 import HandyOperators
 
-public struct MatchDetails: Codable {
+public struct MatchDetails: Codable, Identifiable {
 	public var matchInfo: MatchInfo
 	public var players: [Player]
 	public var teams: [Team]
 	public var roundResults: [RoundResult]
 	public var kills: [Kill]
+	
+	public var id: Match.ID { matchInfo.id }
 	
 	public init(from decoder: Decoder) throws {
 		let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -19,7 +21,7 @@ public struct MatchDetails: Codable {
 	}
 }
 
-public struct MatchInfo: Codable {
+public struct MatchInfo: Codable, Identifiable {
 	public var id: Match.ID
 	public var mapID: MapID
 	public var gameVersion: String
@@ -53,7 +55,7 @@ public struct MatchInfo: Codable {
 	}
 }
 
-public struct Player: Codable {
+public struct Player: Codable, Identifiable {
 	public typealias ID = ObjectID<Self, UUID>
 	
 	public var id: ID
@@ -69,10 +71,10 @@ public struct Player: Codable {
 	public var competitiveTier: Int
 	
 	public var stats: Stats
-	public var damageDealtByRound: [DamageDealt]
+	public var damageDealtByRound: [DamageDealt]?
 	
-	public var sessionPlaytimeMinutes: Int
-	public var behaviorFactors: BehaviorFactors
+	public var sessionPlaytimeMinutes: Int?
+	public var behaviorFactors: BehaviorFactors?
 	
 	public var name: String {
 		"\(gameName) #\(tagLine)"
@@ -100,7 +102,7 @@ public struct Player: Codable {
 		public var roundsPlayed: Int
 		public var kills, deaths, assists: Int
 		public var playtimeMillis: Int
-		public var abilityCasts: AbilityCasts
+		public var abilityCasts: AbilityCasts?
 		
 		public struct AbilityCasts: Codable {
 			public var first, second, signature, ultimate: Int
@@ -151,8 +153,9 @@ public struct RoundResult: Codable {
 	public var ceremony: String
 	public var winningTeam: Team.ID
 	
-	public var playerEconomies: [PlayerEconomy]
-	public var playerScores: [PlayerScore]
+	public var playerEconomies: [PlayerEconomy]?
+	public var playerScores: [PlayerScore]?
+	public var playerStats: [PlayerStats]
 	
 	public var plantSite: String?
 	public var plant: BombAction?
@@ -166,10 +169,10 @@ public struct RoundResult: Codable {
 	}
 	
 	public struct PlayerEconomy {
-		public var subject: Player.ID
+		public var subject: Player.ID?
 		public var spent, remaining: Int
 		public var loadoutValue: Int
-		public var weapon: Weapon.ID
+		public var weapon: Weapon.ID?
 		public var armor: Armor.ID?
 		// no info on sidearms unfortunately
 	}
@@ -177,6 +180,41 @@ public struct RoundResult: Codable {
 	public struct PlayerScore: Codable {
 		public var subject: Player.ID
 		public var score: Int
+	}
+	
+	public struct PlayerStats: Codable {
+		public var subject: Player.ID
+		
+		public var kills: [Kill]
+		public var damageDealt: [Damage]
+		public var combatScore: Int
+		public var economy: PlayerEconomy
+		
+		public var wasAFK: Bool
+		public var wasPenalized: Bool
+		public var stayedInSpawn: Bool
+		
+		private enum CodingKeys: String, CodingKey {
+			case subject
+			
+			case kills
+			case damageDealt = "damage"
+			case combatScore = "score"
+			case economy
+			// there's also a key here 'abilities' whose nested values always seem to be null, at least in the games i checked lol
+			
+			case wasAFK = "wasAfk"
+			case wasPenalized
+			case stayedInSpawn
+		}
+		
+		public struct Damage: Codable {
+			public var receiver: Player.ID
+			public var damage: Int
+			public var headshots: Int
+			public var bodyshots: Int
+			public var legshots: Int
+		}
 	}
 }
 
@@ -197,10 +235,28 @@ public struct Position: Codable, Hashable {
 	public var x, y: Int
 }
 
-extension RoundResult.PlayerEconomy: Codable {}
+extension RoundResult.PlayerEconomy: Codable {
+	public init(from decoder: Decoder) throws {
+		let container = try decoder.container(keyedBy: CodingKeys.self)
+		subject = try container.decodeValueIfPresent(forKey: .subject)
+		spent = try container.decodeValue(forKey: .spent)
+		remaining = try container.decodeValue(forKey: .remaining)
+		loadoutValue = try container.decodeValue(forKey: .loadoutValue)
+		
+		let rawWeapon = try container.decodeIfPresent(String.self, forKey: .weapon)
+		if rawWeapon?.isEmpty == false {
+			weapon = try container.decodeValue(forKey: .weapon)
+		}
+		
+		let rawArmor = try container.decodeIfPresent(String.self, forKey: .armor)
+		if rawArmor?.isEmpty == false {
+			armor = try container.decodeValue(forKey: .armor)
+		}
+	}
+}
 
 public struct Kill: Codable {
-	public var round: Int
+	public var round: Int?
 	public var roundTimeMillis: Int
 	public var gameTimeMillis: Int
 	
@@ -263,8 +319,9 @@ private struct APIRoundResult: Decodable {
 	var ceremony: String
 	var winningTeam: Team.ID
 	
-	var playerEconomies: [APIPlayerEconomy]
-	var playerScores: [RoundResult.PlayerScore]
+	var playerEconomies: [RoundResult.PlayerEconomy]?
+	var playerScores: [RoundResult.PlayerScore]?
+	var playerStats: [RoundResult.PlayerStats]
 	
 	var plantSite: String
 	var plantTimeMillis: Int
@@ -284,8 +341,9 @@ private struct APIRoundResult: Decodable {
 			outcomeCode: outcomeCode,
 			ceremony: ceremony,
 			winningTeam: winningTeam,
-			playerEconomies: try playerEconomies.map { try $0.makeModel(in: container) },
+			playerEconomies: playerEconomies,
 			playerScores: playerScores,
+			playerStats: playerStats,
 			plantSite: plantSite.isEmpty ? nil : plantSite,
 			plant: try planter.map {
 				try .init(
@@ -322,6 +380,7 @@ private struct APIRoundResult: Decodable {
 		
 		case playerEconomies
 		case playerScores
+		case playerStats
 		
 		case plantSite
 		case plantTimeMillis = "plantRoundTime"
@@ -333,27 +392,5 @@ private struct APIRoundResult: Decodable {
 		case defuseLocation
 		case defusePlayerLocations
 		case defuser = "bombDefuser"
-	}
-	
-	public struct APIPlayerEconomy: Codable {
-		public var subject: Player.ID
-		public var spent, remaining: Int
-		public var loadoutValue: Int
-		public var weapon: Weapon.ID
-		public var armor: String
-		
-		func makeModel(in container: SingleValueDecodingContainer) throws -> RoundResult.PlayerEconomy {
-			.init(
-				subject: subject,
-				spent: spent,
-				remaining: remaining,
-				loadoutValue: loadoutValue,
-				weapon: weapon,
-				armor: armor.isEmpty ? nil : .init(try UUID(uuidString: armor) ??? DecodingError.dataCorruptedError(
-					in: container,
-					debugDescription: "armor id '\(armor)' is not a valid uuid"
-				))
-			)
-		}
 	}
 }
