@@ -1,20 +1,20 @@
 import Foundation
 import Combine
+import Protoquest
 
-struct EntitlementsTokenRequest: JSONJSONRequest {
-	func url(for client: Client) -> URL {
-		BaseURLs.entitlements.appendingPathComponent("token/v1")
-	}
-	
-	struct Response: Decodable {
-		var entitlementsToken: String
-	}
-}
-
-extension Client {
-	func getEntitlementsToken() -> AnyPublisher<String, Error> {
+extension Protoclient {
+	func getEntitlementsToken() -> BasicPublisher<String> {
 		send(EntitlementsTokenRequest())
 			.map(\.entitlementsToken)
 			.eraseToAnyPublisher()
+	}
+}
+
+private struct EntitlementsTokenRequest: JSONJSONRequest, Encodable {
+	var baseURLOverride: URL? { BaseURLs.entitlements }
+	var path: String { "token/v1" }
+	
+	struct Response: Decodable {
+		var entitlementsToken: String
 	}
 }

@@ -1,9 +1,14 @@
 import Foundation
 import Combine
-import HandyOperators
-import ArrayBuilder
+import Protoquest
 
-struct MatchDetailsRequest: GetJSONRequest, GameAPIRequest {
+extension ValorantClient {
+	public func getMatchDetails(matchID: Match.ID) -> BasicPublisher<MatchDetails> {
+		send(MatchDetailsRequest(matchID: matchID))
+	}
+}
+
+private struct MatchDetailsRequest: GetJSONRequest {
 	var matchID: Match.ID
 	
 	var path: String {
@@ -11,10 +16,4 @@ struct MatchDetailsRequest: GetJSONRequest, GameAPIRequest {
 	}
 	
 	typealias Response = MatchDetails
-}
-
-extension Client {
-	public func getMatchDetails(matchID: Match.ID) -> AnyPublisher<MatchDetails, Error> {
-		send(MatchDetailsRequest(matchID: matchID))
-	}
 }

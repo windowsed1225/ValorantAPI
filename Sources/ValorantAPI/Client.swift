@@ -1,24 +1,54 @@
 import Foundation
 import Combine
 import HandyOperators
+import Protoquest
 
-public final class Client: Identifiable {
-	public static let requestEncoder = JSONEncoder() <- {
-		$0.keyEncodingStrategy = .convertToSnakeCase
-	}
+public final class ValorantClient: Identifiable {
+	/// The decoder used to decode JSON data received from Riot's servers.
 	public static let responseDecoder = JSONDecoder() <- {
 		$0.keyDecodingStrategy = .convertFromSnakeCase
 		$0.dateDecodingStrategy = .millisecondsSince1970
 		$0.userInfo[.isDecodingFromRiot] = true
 	}
 	
-	public let region: Region
-	private let session = URLSession(configuration: .ephemeral)
+	/// There's no real point for typed errors most of the time.
+	public typealias BasicPublisher<T> = AnyPublisher<T, Error>
 	
-	private var accessToken: String?
-	private var entitlementsToken: String?
+	/// Attempts to authenticate with the given credentials and, as a result, publishes a client instance initialized with the necessary tokens.
+	public static func authenticated(username: String, password: String, region: Region) -> BasicPublisher<ValorantClient> {
+		Client.authenticated(username: username, password: password, region: region)
+			.map(Self.init(client:))
+			.eraseToAnyPublisher()
+	}
 	
-	public static func authenticated(username: String, password: String, region: Region) -> AnyPublisher<Client, Error> {
+	private let client: Protoclient
+	
+	private init(client: Protoclient) {
+		self.client = client
+	}
+	
+	func send<R: Request>(_ request: R) -> BasicPublisher<R.Response> {
+		client.send(request)
+	}
+}
+
+private final class Client: Identifiable, Protoclient {
+	static let requestEncoder = JSONEncoder() <- {
+		$0.keyEncodingStrategy = .convertToSnakeCase
+	}
+	var requestEncoder: JSONEncoder { Self.requestEncoder }
+	
+	var responseDecoder: JSONDecoder { ValorantClient.responseDecoder }
+	
+	let region: Region
+	let session = URLSession(configuration: .ephemeral)
+	
+	fileprivate var accessToken: String?
+	fileprivate var entitlementsToken: String?
+	
+	var baseURL: URL { BaseURLs.gameAPI(region: region) }
+	
+	static func authenticated(username: String, password: String, region: Region) -> AnyPublisher<Client, Error> {
 		let client = Client(region: region)
 		return client.establishSession()
 			.flatMap {
@@ -37,47 +67,11 @@ public final class Client: Identifiable {
 		self.region = region
 	}
 	
-	func send<R: Request>(_ request: R) -> AnyPublisher<R.Response, Error> {
-		Just(request)
-			.tryMap(rawRequest(for:))
-			.flatMap { [session] in
-				session.dataTaskPublisher(for: $0).mapError { $0 }
-			}
-			//.map { $0 <- { print("response: \(String(bytes: $0.data, encoding: .utf8)!)") } }
-			.tryMap {
-				try request.decodeResponse(from: $0.data, using: Self.responseDecoder)
-			}
-			.eraseToAnyPublisher()
-	}
-	
-	private func rawRequest<R: Request>(for request: R) throws -> URLRequest {
-		let components = URLComponents(
-			url: request.url(for: self),
-			resolvingAgainstBaseURL: false
-		)! <- {
-			$0.queryItems = request.urlParams().map { name, value in
-				URLQueryItem(
-					name: name,
-					value: value.map(String.init(describing:))
-				)
-			}
-		}
-		
-		return try URLRequest(url: components.url!) <- { rawRequest in
-			try request.encode(to: &rawRequest, using: Self.requestEncoder)
-			
-			//print("sending request to \(request.url)")
-			//rawRequest.httpBody.map { print("request: \(String(bytes: $0, encoding: .utf8)!)") }
-			
-			addHeaders(to: &rawRequest)
-		}
-	}
-	
 	private static let encodedPlatformInfo = try! JSONEncoder()
 		.encode(PlatformInfo.supportedExample)
 		.base64EncodedString()
 	
-	private func addHeaders(to rawRequest: inout URLRequest) {
+	func addHeaders(to rawRequest: inout URLRequest) {
 		if let token = accessToken {
 			rawRequest.setValue(token, forHTTPHeaderField: "Authorization")
 		}
@@ -95,5 +89,15 @@ private extension CodingUserInfoKey {
 extension Decoder {
 	var isDecodingFromRiot: Bool {
 		(userInfo[.isDecodingFromRiot] as? Bool) ?? false
+	}
+}
+
+enum BaseURLs {
+	static let auth = URL(string: "https://auth.riotgames.com")!
+	static let authAPI = auth.appendingPathComponent("api/v1")
+	static let entitlements = URL(string: "https://entitlements.auth.riotgames.com/api")!
+	
+	static func gameAPI(region: Region) -> URL {
+		URL(string: "https://pd.\(region.subdomain).a.pvp.net")!
 	}
 }

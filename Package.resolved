@@ -15,8 +15,17 @@
         "repositoryURL": "https://github.com/juliand665/HandyOperators",
         "state": {
           "branch": null,
-          "revision": "483aa96950ad3078d092b2ba8d9dda6ea6576244",
-          "version": "1.0.0"
+          "revision": "bb0ae87af5a3c0dd052c0f8f5d85a2b3ee26b31c",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "Protoquest",
+        "repositoryURL": "https://github.com/juliand665/Protoquest",
+        "state": {
+          "branch": "main",
+          "revision": "14926cf1102db11d82c9b22c6530aa8a653fac10",
+          "version": null
         }
       }
     ]

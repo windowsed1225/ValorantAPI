@@ -1,13 +1,48 @@
 import Foundation
 import Combine
 import HandyOperators
+import Protoquest
 
-struct CookiesRequest: JSONJSONRequest {
+extension Protoclient {
+	func establishSession() -> BasicPublisher<Void> {
+		send(CookiesRequest())
+			.map { (response: AuthenticationResponse) in // takes forever to compile without this
+				assert(response.type == .auth && response.error == nil)
+			}
+			.eraseToAnyPublisher()
+	}
+	
+	func getAccessToken(username: String, password: String) -> BasicPublisher<String> {
+		send(AccessTokenRequest(username: username, password: password))
+			.tryMap { response in
+				guard response.type != .auth else {
+					throw AuthenticationError(message: response.error ?? "<no message given>")
+				}
+				assert(response.type == .response && response.error == nil)
+				
+				return response.response!.extractAccessToken()
+			}
+			.eraseToAnyPublisher()
+	}
+}
+
+public struct AuthenticationError: LocalizedError {
+	static var messageOverrides = [
+		"auth_failure": "Invalid username or password."
+	]
+	
+	public var message: String
+	
+	public var errorDescription: String? {
+		Self.messageOverrides[message] ?? message
+	}
+}
+
+private struct CookiesRequest: JSONJSONRequest, Encodable {
 	typealias Response = AuthenticationResponse
 	
-	func url(for client: Client) -> URL {
-		BaseURLs.authAPI.appendingPathComponent("authorization")
-	}
+	var baseURLOverride: URL? { BaseURLs.authAPI }
+	var path: String { "authorization" }
 	
 	let clientID = "play-valorant-web-prod"
 	let responseType = "token id_token"
@@ -16,19 +51,17 @@ struct CookiesRequest: JSONJSONRequest {
 	let scope = "account openid"
 }
 
-struct AccessTokenRequest: JSONJSONRequest {
+private struct AccessTokenRequest: JSONJSONRequest, Encodable {
 	typealias Response = AuthenticationResponse
 	
-	static let httpMethod = "PUT"
-	func url(for client: Client) -> URL {
-		BaseURLs.authAPI.appendingPathComponent("authorization")
-	}
+	var httpMethod: String { "PUT" }
+	var baseURLOverride: URL? { BaseURLs.authAPI }
 	
 	let type = AuthMessageType.auth
 	var username, password: String
 }
 
-struct AuthenticationResponse: Decodable {
+private struct AuthenticationResponse: Decodable {
 	var type: AuthMessageType
 	
 	var error: String?
@@ -61,48 +94,13 @@ struct AuthenticationResponse: Decodable {
 	}
 }
 
-struct CommunicationMetadata: Codable {
+private struct CommunicationMetadata: Codable {
 	var type: AuthMessageType
 	var country: String
 }
 
-enum AuthMessageType: String, Hashable, Codable {
+private enum AuthMessageType: String, Hashable, Codable {
 	case auth
 	case response
 	case error
-}
-
-extension Client {
-	func establishSession() -> AnyPublisher<Void, Error> {
-		send(CookiesRequest())
-			.map { (response: AuthenticationResponse) in // takes forever to compile without this
-				assert(response.type == .auth && response.error == nil)
-			}
-			.eraseToAnyPublisher()
-	}
-	
-	func getAccessToken(username: String, password: String) -> AnyPublisher<String, Error> {
-		send(AccessTokenRequest(username: username, password: password))
-			.tryMap { response in
-				guard response.type != .auth else {
-					throw AuthenticationError(message: response.error ?? "<no message given>")
-				}
-				assert(response.type == .response && response.error == nil)
-				
-				return response.response!.extractAccessToken()
-			}
-			.eraseToAnyPublisher()
-	}
-}
-
-struct AuthenticationError: LocalizedError {
-	static var messageOverrides = [
-		"auth_failure": "Invalid username or password."
-	]
-	
-	var message: String
-	
-	var errorDescription: String? {
-		Self.messageOverrides[message] ?? message
-	}
 }

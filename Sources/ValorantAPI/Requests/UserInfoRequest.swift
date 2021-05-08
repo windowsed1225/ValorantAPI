@@ -1,16 +1,16 @@
 import Foundation
 import Combine
+import Protoquest
 
-struct UserInfoRequest: JSONJSONRequest {
-	func url(for client: Client) -> URL {
-		BaseURLs.auth.appendingPathComponent("userinfo")
+extension ValorantClient {
+	public func getUserInfo() -> BasicPublisher<UserInfo> {
+		send(UserInfoRequest())
 	}
-	
-	typealias Response = UserInfo
 }
 
-extension Client {
-	public func getUserInfo() -> AnyPublisher<UserInfo, Error> {
-		send(UserInfoRequest())
-	} 
+private struct UserInfoRequest: JSONJSONRequest, Encodable {
+	var baseURLOverride: URL? { BaseURLs.auth }
+	var path: String { "userinfo" }
+	
+	typealias Response = UserInfo
 }
