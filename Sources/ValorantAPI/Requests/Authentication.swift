@@ -56,6 +56,7 @@ private struct AccessTokenRequest: JSONJSONRequest, Encodable {
 	
 	var httpMethod: String { "PUT" }
 	var baseURLOverride: URL? { BaseURLs.authAPI }
+	var path: String { "authorization" }
 	
 	let type = AuthMessageType.auth
 	var username, password: String
