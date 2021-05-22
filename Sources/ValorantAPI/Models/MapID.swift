@@ -1,7 +1,7 @@
 import Foundation
 import HandyOperators
 
-public struct MapID {
+public struct MapID: Hashable {
 	public var path: String
 	
 	public static let mapPaths: [(path: String, map: String)] = [

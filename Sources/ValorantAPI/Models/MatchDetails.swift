@@ -67,7 +67,7 @@ public struct Player: Codable, Identifiable {
 	
 	public var teamID: Team.ID
 	public var partyID: Party.ID
-	public var characterID: Character.ID
+	public var agentID: Agent.ID
 	public var competitiveTier: Int
 	
 	public var stats: Stats
@@ -87,7 +87,7 @@ public struct Player: Codable, Identifiable {
 		case platformInfo
 		case teamID = "teamId"
 		case partyID = "partyId"
-		case characterID = "characterId"
+		case agentID = "characterId"
 		case stats
 		case damageDealtByRound = "roundDamage"
 		case competitiveTier

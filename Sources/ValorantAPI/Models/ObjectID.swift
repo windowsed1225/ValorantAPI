@@ -51,7 +51,7 @@ public enum Party {
 	public typealias ID = ObjectID<Self, UUID>
 }
 
-public enum Character {
+public enum Agent {
 	public typealias ID = ObjectID<Self, UUID>
 }
 
