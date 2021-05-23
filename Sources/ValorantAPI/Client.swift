@@ -30,9 +30,27 @@ public final class ValorantClient: Identifiable {
 	func send<R: Request>(_ request: R) -> BasicPublisher<R.Response> {
 		client.send(request)
 	}
+	
+	/// An error received from Riot's API.
+	public enum APIError: Error {
+		/// This likely means your access token has expired.
+		case tokenFailure(message: String)
+		/// The service is currently down for scheduled maintenance.
+		case scheduledDowntime(message: String)
+		/// A non-200 response code was received. If the API returned a valid error JSON, the provided error is passed on here.
+		case badResponseCode(Int, Protoresponse, RiotError?)
+	}
+}
+
+/// How Riot's API represents an error it encountered.
+public struct RiotError: Decodable {
+	public var errorCode: String
+	public var message: String
 }
 
 private final class Client: Identifiable, Protoclient {
+	typealias APIError = ValorantClient.APIError
+	
 	static let requestEncoder = JSONEncoder() <- {
 		$0.keyEncodingStrategy = .convertToSnakeCase
 	}
@@ -79,6 +97,29 @@ private final class Client: Identifiable, Protoclient {
 			rawRequest.setValue(token, forHTTPHeaderField: "X-Riot-Entitlements-JWT")
 		}
 		rawRequest.setValue(Self.encodedPlatformInfo, forHTTPHeaderField: "X-Riot-ClientPlatform")
+	}
+	
+	func dispatch<R: Request>(_ rawRequest: URLRequest, for request: R) -> BasicPublisher<Protoresponse> {
+		session.dataTaskPublisher(for: rawRequest)
+			.mapError { $0 }
+			.map(wrapResponse(data:response:))
+			.tryMap { response in
+				let code = response.httpMetadata!.statusCode
+				guard code != 200 else { return response }
+				
+				guard let error = try? response.decodeJSON(as: RiotError.self)
+				else { throw APIError.badResponseCode(code, response, nil) }
+				
+				switch error.errorCode {
+				case "BAD_CLAIMS":
+					throw APIError.tokenFailure(message: error.message)
+				case "SCHEDULED_DOWNTIME":
+					throw APIError.scheduledDowntime(message: error.message)
+				default:
+					throw APIError.badResponseCode(code, response, error)
+				}
+			}
+			.eraseToAnyPublisher()
 	}
 }
 
