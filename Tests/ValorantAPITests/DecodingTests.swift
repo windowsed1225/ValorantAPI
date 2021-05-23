@@ -3,8 +3,8 @@ import XCTest
 
 final class DecodingTests: XCTestCase {
 	func testDecodingCompUpdates() throws {
-		let response = try decode(CompetitiveUpdatesRequest.Response.self, fromJSONNamed: "comp_updates")
-		XCTAssertEqual(response.matches.count, 20)
+		let matches = try decode([CompetitiveUpdate].self, fromJSONNamed: "comp_updates")
+		XCTAssertEqual(matches.count, 20)
 	}
 	
 	func testDecodingMatch() throws {
@@ -15,7 +15,7 @@ final class DecodingTests: XCTestCase {
 	
 	func testDecodingEscalation() throws {
 		let details = try decode(MatchDetails.self, fromJSONNamed: "escalation")
-		dump(details)
+		//dump(details)
 		XCTAssertEqual(details.players.count, 10)
 	}
 	
@@ -25,6 +25,6 @@ final class DecodingTests: XCTestCase {
 	) throws -> Value where Value: Decodable {
 		let url = Bundle.module.url(forResource: "examples/\(filename)", withExtension: "json")!
 		let json = try Data(contentsOf: url)
-		return try Client.responseDecoder.decode(Value.self, from: json)
+		return try ValorantClient.responseDecoder.decode(Value.self, from: json)
 	}
 }
