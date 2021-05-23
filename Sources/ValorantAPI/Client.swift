@@ -7,7 +7,7 @@ public final class ValorantClient: Identifiable {
 	/// The decoder used to decode JSON data received from Riot's servers.
 	public static let responseDecoder = JSONDecoder() <- {
 		$0.keyDecodingStrategy = .convertFromSnakeCase
-		$0.dateDecodingStrategy = .millisecondsSince1970
+		$0.dateDecodingStrategy = .iso8601OrTimestamp
 		$0.userInfo[.isDecodingFromRiot] = true
 	}
 	
@@ -100,4 +100,19 @@ enum BaseURLs {
 	static func gameAPI(region: Region) -> URL {
 		URL(string: "https://pd.\(region.subdomain).a.pvp.net")!
 	}
+}
+
+private extension JSONDecoder.DateDecodingStrategy {
+	static let iso8601OrTimestamp = custom { decoder in
+		let container = try decoder.singleValueContainer()
+		return try nil
+			?? (try? Date(timeIntervalSince1970: container.decode(TimeInterval.self) / 1000))
+			?? (try? formatter.date(from: container.decode(String.self)))
+			??? DecodingError.dataCorruptedError(
+				in: container,
+				debugDescription: "Could not decode timestamp nor ISO-8601 date from value."
+			)
+	}
+	
+	private static let formatter = ISO8601DateFormatter()
 }

@@ -19,6 +19,12 @@ final class DecodingTests: XCTestCase {
 		XCTAssertEqual(details.players.count, 10)
 	}
 	
+	func testDecodingContracts() throws {
+		let details = try decode(ContractDetails.self, fromJSONNamed: "contracts")
+		dump(details)
+		XCTAssertEqual(details.contracts.count, 23)
+	}
+	
 	private func decode<Value>(
 		_ value: Value.Type = Value.self,
 		fromJSONNamed filename: String
