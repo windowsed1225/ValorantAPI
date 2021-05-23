@@ -282,7 +282,7 @@ public struct Kill: Codable {
 	}
 	
 	public struct Damage: Codable {
-		public var type: String
+		public var type: DamageType
 		/// weapon id or ability name/"id", not sure about fall damage
 		public var source: String
 		public var wasInSecondaryFireMode: Bool
@@ -291,6 +291,27 @@ public struct Kill: Codable {
 			case type = "damageType"
 			case source = "damageItem"
 			case wasInSecondaryFireMode = "isSecondaryFireMode"
+		}
+		
+		public struct DamageType: Hashable, Codable {
+			public static let bomb = Self("Bomb")
+			public static let weapon = Self("Weapon")
+			
+			public var rawValue: String
+			
+			init(_ rawValue: String) {
+				self.rawValue = rawValue
+			}
+			
+			public init(from decoder: Decoder) throws {
+				let container = try decoder.singleValueContainer()
+				self.rawValue = try container.decode(String.self)
+			}
+			
+			public func encode(to encoder: Encoder) throws {
+				var container = encoder.singleValueContainer()
+				try container.encode(rawValue)
+			}
 		}
 	}
 }
