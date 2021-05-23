@@ -3,7 +3,7 @@ import Combine
 import HandyOperators
 import Protoquest
 
-public final class ValorantClient: Identifiable {
+public final class ValorantClient: Identifiable, Codable {
 	/// The decoder used to decode JSON data received from Riot's servers.
 	public static let responseDecoder = JSONDecoder() <- {
 		$0.keyDecodingStrategy = .convertFromSnakeCase
@@ -21,9 +21,9 @@ public final class ValorantClient: Identifiable {
 			.eraseToAnyPublisher()
 	}
 	
-	private let client: Protoclient
+	private let client: Client
 	
-	private init(client: Protoclient) {
+	private init(client: Client) {
 		self.client = client
 	}
 	
@@ -48,7 +48,7 @@ public struct RiotError: Decodable {
 	public var message: String
 }
 
-private final class Client: Identifiable, Protoclient {
+private final class Client: Identifiable, Protoclient, Codable {
 	typealias APIError = ValorantClient.APIError
 	
 	static let requestEncoder = JSONEncoder() <- {
@@ -120,6 +120,18 @@ private final class Client: Identifiable, Protoclient {
 				}
 			}
 			.eraseToAnyPublisher()
+	}
+	
+	#if DEBUG
+	func traceOutgoing<R>(_ rawRequest: URLRequest, for request: R) where R : Request {
+		print("sending request to", rawRequest.url!)
+	}
+	#endif
+	
+	private enum CodingKeys: CodingKey {
+		case region
+		case accessToken
+		case entitlementsToken
 	}
 }
 
