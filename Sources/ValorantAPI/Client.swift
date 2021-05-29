@@ -33,6 +33,8 @@ public final class ValorantClient: Identifiable, Codable {
 	
 	/// An error received from Riot's API.
 	public enum APIError: Error {
+		/// This is outputted for 401 error codes, which the API sometimes responds with instead of providing actual error information… It usually also means you need to reauthenticate.
+		case unauthorized
 		/// This likely means your access token has expired.
 		case tokenFailure(message: String)
 		/// The service is currently down for scheduled maintenance.
@@ -107,8 +109,13 @@ private final class Client: Identifiable, Protoclient, Codable {
 				let code = response.httpMetadata!.statusCode
 				guard code != 200 else { return response }
 				
-				guard let error = try? response.decodeJSON(as: RiotError.self)
-				else { throw APIError.badResponseCode(code, response, nil) }
+				guard let error = try? response.decodeJSON(as: RiotError.self) else {
+					if code == 401 {
+						throw APIError.unauthorized
+					} else {
+						throw APIError.badResponseCode(code, response, nil)
+					}
+				}
 				
 				switch error.errorCode {
 				case "BAD_CLAIMS":
