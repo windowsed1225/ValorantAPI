@@ -41,6 +41,8 @@ public final class ValorantClient: Identifiable, Codable {
 		case scheduledDowntime(message: String)
 		/// A non-200 response code was received. If the API returned a valid error JSON, the provided error is passed on here.
 		case badResponseCode(Int, Protoresponse, RiotError?)
+		/// You were rate-limited for sending too many requests. If provided, `retryAfter` indicates after how many seconds the limit should be lifted again.
+		case rateLimited(retryAfter: Int?)
 	}
 }
 
@@ -109,21 +111,28 @@ private final class Client: Identifiable, Protoclient, Codable {
 				let code = response.httpMetadata!.statusCode
 				guard code != 200 else { return response }
 				
-				guard let error = try? response.decodeJSON(as: RiotError.self) else {
-					if code == 401 {
+				if let error = try? response.decodeJSON(as: RiotError.self) {
+					switch error.errorCode {
+					case "BAD_CLAIMS":
+						throw APIError.tokenFailure(message: error.message)
+					case "SCHEDULED_DOWNTIME":
+						throw APIError.scheduledDowntime(message: error.message)
+					default:
+						throw APIError.badResponseCode(code, response, error)
+					}
+				} else {
+					switch code {
+					case 401:
 						throw APIError.unauthorized
-					} else {
+					case 429:
+						throw APIError.rateLimited(
+							retryAfter: response.httpMetadata!
+								.value(forHTTPHeaderField: "Retry-After")
+								.flatMap(Int.init)
+						)
+					default:
 						throw APIError.badResponseCode(code, response, nil)
 					}
-				}
-				
-				switch error.errorCode {
-				case "BAD_CLAIMS":
-					throw APIError.tokenFailure(message: error.message)
-				case "SCHEDULED_DOWNTIME":
-					throw APIError.scheduledDowntime(message: error.message)
-				default:
-					throw APIError.badResponseCode(code, response, error)
 				}
 			}
 			.eraseToAnyPublisher()
