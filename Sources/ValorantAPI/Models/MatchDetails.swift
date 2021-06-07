@@ -56,9 +56,7 @@ public struct MatchInfo: Codable, Identifiable {
 }
 
 public struct Player: Codable, Identifiable {
-	public typealias ID = ObjectID<Self, UUID>
-	
-	public var id: ID
+	public var id: User.ID
 	public var gameName: String
 	public var tagLine: String
 	public var platformInfo: PlatformInfo
