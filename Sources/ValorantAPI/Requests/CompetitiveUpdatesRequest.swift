@@ -10,11 +10,12 @@ extension ValorantClient {
 	public func getCompetitiveUpdates(
 		userID: Player.ID,
 		queue: QueueID? = nil,
-		startIndex: Int = 0
+		startIndex: Int = 0,
+		endIndex: Int? = nil
 	) -> BasicPublisher<[CompetitiveUpdate]> {
 		send(CompetitiveUpdatesRequest(
 			userID: userID,
-			startIndex: startIndex, endIndex: startIndex + 20,
+			startIndex: startIndex, endIndex: endIndex ?? (startIndex + 20),
 			queue: queue
 		))
 		.map(\.matches)
