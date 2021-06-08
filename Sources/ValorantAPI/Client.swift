@@ -156,6 +156,7 @@ private final class Client: Identifiable, Protoclient, Codable {
 		case region
 		case accessToken
 		case entitlementsToken
+		case clientVersion
 	}
 }
 
