@@ -31,6 +31,10 @@ public final class ValorantClient: Identifiable, Codable {
 		client.send(request)
 	}
 	
+	public func setClientVersion(_ version: String) {
+		client.clientVersion = version
+	}
+	
 	/// An error received from Riot's API.
 	public enum APIError: Error {
 		/// This is outputted for 401 error codes, which the API sometimes responds with instead of providing actual error information… It usually also means you need to reauthenticate.
@@ -67,6 +71,7 @@ private final class Client: Identifiable, Protoclient, Codable {
 	
 	fileprivate var accessToken: String?
 	fileprivate var entitlementsToken: String?
+	fileprivate var clientVersion: String?
 	
 	var baseURL: URL { BaseURLs.gameAPI(region: region) }
 	
@@ -99,6 +104,9 @@ private final class Client: Identifiable, Protoclient, Codable {
 		}
 		if let token = entitlementsToken {
 			rawRequest.setValue(token, forHTTPHeaderField: "X-Riot-Entitlements-JWT")
+		}
+		if let version = clientVersion {
+			rawRequest.setValue(version, forHTTPHeaderField: "X-Riot-ClientVersion")
 		}
 		rawRequest.setValue(Self.encodedPlatformInfo, forHTTPHeaderField: "X-Riot-ClientPlatform")
 	}
