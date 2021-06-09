@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/juliand665/HandyOperators",
         "state": {
           "branch": null,
-          "revision": "bb0ae87af5a3c0dd052c0f8f5d85a2b3ee26b31c",
-          "version": "2.0.0"
+          "revision": "27f60a00d9ad310afdf66cc7a25adc4bdb387d58",
+          "version": "2.0.1"
         }
       },
       {
@@ -24,7 +24,7 @@
         "repositoryURL": "https://github.com/juliand665/Protoquest",
         "state": {
           "branch": "swift-5.5",
-          "revision": "d044690aa0a931b7727b3470f1fc39a9c1d41b99",
+          "revision": "3ef1355482e69591cef1e15607df67928ce33ac8",
           "version": null
         }
       }
