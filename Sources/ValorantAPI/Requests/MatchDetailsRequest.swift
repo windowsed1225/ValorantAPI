@@ -1,10 +1,9 @@
 import Foundation
-import Combine
 import Protoquest
 
 extension ValorantClient {
-	public func getMatchDetails(matchID: Match.ID) -> BasicPublisher<MatchDetails> {
-		send(MatchDetailsRequest(matchID: matchID))
+	public func getMatchDetails(matchID: Match.ID) async throws -> MatchDetails {
+		try await send(MatchDetailsRequest(matchID: matchID))
 	}
 }
 

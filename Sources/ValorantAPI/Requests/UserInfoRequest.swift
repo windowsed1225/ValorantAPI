@@ -1,10 +1,9 @@
 import Foundation
-import Combine
 import Protoquest
 
 extension ValorantClient {
-	public func getUserInfo() -> BasicPublisher<UserInfo> {
-		send(UserInfoRequest())
+	public func getUserInfo() async throws -> UserInfo {
+		try await send(UserInfoRequest())
 	}
 }
 

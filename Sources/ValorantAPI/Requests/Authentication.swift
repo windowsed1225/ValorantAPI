@@ -1,28 +1,22 @@
 import Foundation
-import Combine
 import HandyOperators
 import Protoquest
 
 extension Protoclient {
-	func establishSession() -> BasicPublisher<Void> {
-		send(CookiesRequest())
-			.map { (response: AuthenticationResponse) in // takes forever to compile without this
-				assert(response.type == .auth && response.error == nil)
-			}
-			.eraseToAnyPublisher()
+	func establishSession() async throws -> Void {
+		let response = try await send(CookiesRequest())
+		assert(response.type == .auth && response.error == nil)
 	}
 	
-	func getAccessToken(username: String, password: String) -> BasicPublisher<String> {
-		send(AccessTokenRequest(username: username, password: password))
-			.tryMap { response in
-				guard response.type != .auth else {
-					throw AuthenticationError(message: response.error ?? "<no message given>")
-				}
-				assert(response.type == .response && response.error == nil)
-				
-				return response.response!.extractAccessToken()
-			}
-			.eraseToAnyPublisher()
+	func getAccessToken(username: String, password: String) async throws -> String {
+		let response = try await send(AccessTokenRequest(username: username, password: password))
+		
+		guard response.type != .auth else {
+			throw AuthenticationError(message: response.error ?? "<no message given>")
+		}
+		assert(response.type == .response && response.error == nil)
+		
+		return response.response!.extractAccessToken()
 	}
 }
 

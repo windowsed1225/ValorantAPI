@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 import HandyOperators
 import Protoquest
 
@@ -11,14 +10,10 @@ public final class ValorantClient: Identifiable, Codable {
 		$0.userInfo[.isDecodingFromRiot] = true
 	}
 	
-	/// There's no real point for typed errors most of the time.
-	public typealias BasicPublisher<T> = AnyPublisher<T, Error>
-	
 	/// Attempts to authenticate with the given credentials and, as a result, publishes a client instance initialized with the necessary tokens.
-	public static func authenticated(username: String, password: String, region: Region) -> BasicPublisher<ValorantClient> {
-		Client.authenticated(username: username, password: password, region: region)
-			.map(Self.init(client:))
-			.eraseToAnyPublisher()
+	public static func authenticated(username: String, password: String, region: Region) async throws -> ValorantClient {
+		let client = try await Client.authenticated(username: username, password: password, region: region)
+		return Self(client: client)
 	}
 	
 	private let client: Client
@@ -27,8 +22,8 @@ public final class ValorantClient: Identifiable, Codable {
 		self.client = client
 	}
 	
-	func send<R: Request>(_ request: R) -> BasicPublisher<R.Response> {
-		client.send(request)
+	func send<R: Request>(_ request: R) async throws -> R.Response {
+		try await client.send(request)
 	}
 	
 	public func setClientVersion(_ version: String) {
@@ -75,19 +70,13 @@ private final class Client: Identifiable, Protoclient, Codable {
 	
 	var baseURL: URL { BaseURLs.gameAPI(region: region) }
 	
-	static func authenticated(username: String, password: String, region: Region) -> AnyPublisher<Client, Error> {
+	static func authenticated(username: String, password: String, region: Region) async throws -> Client {
 		let client = Client(region: region)
-		return client.establishSession()
-			.flatMap {
-				client.getAccessToken(username: username, password: password)
-					.map { client.accessToken = $0 }
-			}
-			.flatMap {
-				client.getEntitlementsToken()
-					.map { client.entitlementsToken = $0 }
-			}
-			.map { client }
-			.eraseToAnyPublisher()
+		try await client.establishSession()
+		
+		client.accessToken = try await client.getAccessToken(username: username, password: password)
+		client.entitlementsToken = try await client.getEntitlementsToken()
+		return client
 	}
 	
 	private init(region: Region) {
@@ -111,39 +100,38 @@ private final class Client: Identifiable, Protoclient, Codable {
 		rawRequest.setValue(Self.encodedPlatformInfo, forHTTPHeaderField: "X-Riot-ClientPlatform")
 	}
 	
-	func dispatch<R: Request>(_ rawRequest: URLRequest, for request: R) -> BasicPublisher<Protoresponse> {
-		session.dataTaskPublisher(for: rawRequest)
-			.mapError { $0 }
-			.map(wrapResponse(data:response:))
-			.tryMap { response in
-				let code = response.httpMetadata!.statusCode
-				guard code != 200 else { return response }
-				
-				if let error = try? response.decodeJSON(as: RiotError.self) {
-					switch error.errorCode {
-					case "BAD_CLAIMS":
-						throw APIError.tokenFailure(message: error.message)
-					case "SCHEDULED_DOWNTIME":
-						throw APIError.scheduledDowntime(message: error.message)
-					default:
-						throw APIError.badResponseCode(code, response, error)
-					}
-				} else {
-					switch code {
-					case 401:
-						throw APIError.unauthorized
-					case 429:
-						throw APIError.rateLimited(
-							retryAfter: response.httpMetadata!
-								.value(forHTTPHeaderField: "Retry-After")
-								.flatMap(Int.init)
-						)
-					default:
-						throw APIError.badResponseCode(code, response, nil)
-					}
-				}
+	func dispatch<R: Request>(_ rawRequest: URLRequest, for request: R) async throws -> Protoresponse {
+		let (data, rawResponse) = try await session.data(for: rawRequest)
+		let response = wrapResponse(data: data, response: rawResponse)
+		
+		let code = response.httpMetadata!.statusCode
+		guard code != 200 else { return response }
+		
+		// error handling
+		
+		if let error = try? response.decodeJSON(as: RiotError.self) {
+			switch error.errorCode {
+			case "BAD_CLAIMS":
+				throw APIError.tokenFailure(message: error.message)
+			case "SCHEDULED_DOWNTIME":
+				throw APIError.scheduledDowntime(message: error.message)
+			default:
+				throw APIError.badResponseCode(code, response, error)
 			}
-			.eraseToAnyPublisher()
+		} else {
+			switch code {
+			case 401:
+				throw APIError.unauthorized
+			case 429:
+				throw APIError.rateLimited(
+					retryAfter: response.httpMetadata!
+						.value(forHTTPHeaderField: "Retry-After")
+						.flatMap(Int.init)
+				)
+			default:
+				throw APIError.badResponseCode(code, response, nil)
+			}
+		}
 	}
 	
 	#if DEBUG

@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 import HandyOperators
 import Protoquest
 
@@ -9,14 +8,12 @@ extension ValorantClient {
 		userID: Player.ID,
 		queue: QueueID? = nil,
 		startIndex: Int = 0
-	) -> BasicPublisher<[MatchHistoryEntry]> {
-		send(MatchHistoryRequest(
+	) async throws -> [MatchHistoryEntry] {
+		try await send(MatchHistoryRequest(
 			userID: userID,
 			startIndex: startIndex, endIndex: startIndex + 20,
 			queue: queue
-		))
-		.map(\.history)
-		.eraseToAnyPublisher()
+		)).history
 	}
 }
 

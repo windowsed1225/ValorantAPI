@@ -1,5 +1,4 @@
 import Foundation
-import Combine
 import HandyOperators
 import Protoquest
 
@@ -12,14 +11,12 @@ extension ValorantClient {
 		queue: QueueID? = nil,
 		startIndex: Int = 0,
 		endIndex: Int? = nil
-	) -> BasicPublisher<[CompetitiveUpdate]> {
-		send(CompetitiveUpdatesRequest(
+	) async throws -> [CompetitiveUpdate] {
+		try await send(CompetitiveUpdatesRequest(
 			userID: userID,
 			startIndex: startIndex, endIndex: endIndex ?? (startIndex + 20),
 			queue: queue
-		))
-		.map(\.matches)
-		.eraseToAnyPublisher()
+		)).matches
 	}
 }
 

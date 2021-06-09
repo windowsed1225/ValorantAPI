@@ -5,9 +5,9 @@
         "package": "ArrayBuilder",
         "repositoryURL": "https://github.com/juliand665/ArrayBuilder",
         "state": {
-          "branch": "main",
-          "revision": "fc06af7372b00661f0f34578551c8abe96015403",
-          "version": null
+          "branch": null,
+          "revision": "f713ffd1432c5fb7cbf47a84bd634b18256957b6",
+          "version": "1.1.0"
         }
       },
       {
@@ -23,8 +23,8 @@
         "package": "Protoquest",
         "repositoryURL": "https://github.com/juliand665/Protoquest",
         "state": {
-          "branch": "main",
-          "revision": "14926cf1102db11d82c9b22c6530aa8a653fac10",
+          "branch": "swift-5.5",
+          "revision": "d044690aa0a931b7727b3470f1fc39a9c1d41b99",
           "version": null
         }
       }

@@ -3,8 +3,8 @@ import Protoquest
 
 extension ValorantClient {
 	/// - Note: This request requires that you've set the client version on your client!
-	public func getContractDetails(playerID: Player.ID) -> BasicPublisher<ContractDetails> {
-		send(ContractDetailsRequest(playerID: playerID))
+	public func getContractDetails(playerID: Player.ID) async throws -> ContractDetails {
+		try await send(ContractDetailsRequest(playerID: playerID))
 	}
 }
 

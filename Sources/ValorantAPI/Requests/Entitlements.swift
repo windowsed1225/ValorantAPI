@@ -1,12 +1,9 @@
 import Foundation
-import Combine
 import Protoquest
 
 extension Protoclient {
-	func getEntitlementsToken() -> BasicPublisher<String> {
-		send(EntitlementsTokenRequest())
-			.map(\.entitlementsToken)
-			.eraseToAnyPublisher()
+	func getEntitlementsToken() async throws -> String {
+		try await send(EntitlementsTokenRequest()).entitlementsToken
 	}
 }
 
