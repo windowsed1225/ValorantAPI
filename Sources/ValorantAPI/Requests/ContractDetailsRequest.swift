@@ -2,7 +2,7 @@ import Foundation
 import Protoquest
 
 extension ValorantClient {
-	/// - Note: This request requires that you've set the client version on your client!
+	/// - Note: This request requires that you've set the client version on your client! Use ``setClientVersion(_:)`` for that.
 	public func getContractDetails(playerID: Player.ID) async throws -> ContractDetails {
 		try await send(ContractDetailsRequest(playerID: playerID))
 	}
