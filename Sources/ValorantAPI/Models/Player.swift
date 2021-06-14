@@ -69,4 +69,20 @@ public struct Player: Codable, Identifiable {
 	public struct BehaviorFactors: Codable {
 		public var afkRounds: Double
 	}
+	
+	public struct Identity: Codable, Identifiable {
+		public var id: Player.ID
+		public var cardID: PlayerCard.ID
+		public var titleID: PlayerTitle.ID
+		public var accountLevel: Int
+		public var isIncognito: Bool
+		
+		private enum CodingKeys: String, CodingKey {
+			case id = "Subject"
+			case cardID = "PlayerCardID"
+			case titleID = "PlayerTitleID"
+			case accountLevel = "AccountLevel"
+			case isIncognito = "Incognito"
+		}
+	}
 }

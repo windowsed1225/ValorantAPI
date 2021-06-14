@@ -4,6 +4,7 @@ import XCTest
 final class DecodingTests: XCTestCase {
 	func testDecodingCompUpdates() throws {
 		let matches = try decode([CompetitiveUpdate].self, fromJSONNamed: "comp_updates")
+		//dump(matches)
 		XCTAssertEqual(matches.count, 20)
 	}
 	
@@ -21,8 +22,20 @@ final class DecodingTests: XCTestCase {
 	
 	func testDecodingContracts() throws {
 		let details = try decode(ContractDetails.self, fromJSONNamed: "contracts")
-		dump(details)
+		//dump(details)
 		XCTAssertEqual(details.contracts.count, 23)
+	}
+	
+	func testDecodingLivePregameInfo() throws {
+		let pregameInfo = try decode(LivePregameInfo.self, fromJSONNamed: "pregame_match")
+		//dump(pregameInfo)
+		XCTAssertEqual(pregameInfo.team.players.count, 5)
+	}
+	
+	func testDecodingLiveGameInfo() throws {
+		let gameInfo = try decode(LiveGameInfo.self, fromJSONNamed: "live_match")
+		//dump(gameInfo)
+		XCTAssertEqual(gameInfo.players.count, 10)
 	}
 	
 	private func decode<Value>(
