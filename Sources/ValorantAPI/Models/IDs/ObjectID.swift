@@ -1,6 +1,7 @@
 import Foundation
+import HandyOperators
 
-public struct ObjectID<Object, RawValue>: Hashable where RawValue: Hashable {
+public struct ObjectID<Object, RawValue>: Hashable, _RawWrapper where RawValue: Hashable {
 	public var rawValue: RawValue
 	
 	public init(_ rawValue: RawValue) {
@@ -18,17 +19,7 @@ extension ObjectID where RawValue == UUID {
 	}
 }
 
-extension ObjectID: Codable where RawValue: Codable {
-	public init(from decoder: Decoder) throws {
-		let container = try decoder.singleValueContainer()
-		self.rawValue = try container.decode(RawValue.self)
-	}
-	
-	public func encode(to encoder: Encoder) throws {
-		var container = encoder.singleValueContainer()
-		try container.encode(rawValue)
-	}
-}
+extension ObjectID: Codable where RawValue: Codable {}
 
 extension ObjectID: CustomStringConvertible {
 	public var description: String {

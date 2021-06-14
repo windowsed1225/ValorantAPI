@@ -18,6 +18,8 @@ public final class ValorantClient: Identifiable, Codable {
 	
 	private let client: Client
 	
+	var region: Region { client.region }
+	
 	private init(client: Client) {
 		self.client = client
 	}
@@ -38,6 +40,8 @@ public final class ValorantClient: Identifiable, Codable {
 		case tokenFailure(message: String)
 		/// The service is currently down for scheduled maintenance.
 		case scheduledDowntime(message: String)
+		/// The API could not find a resource at the given location—likely code 404, though we only check the associated ``RiotError/errorCode``.
+		case resourceNotFound
 		/// A non-200 response code was received. If the API returned a valid error JSON, the provided error is passed on here.
 		case badResponseCode(Int, Protoresponse, RiotError?)
 		/// You were rate-limited for sending too many requests. If provided, `retryAfter` indicates after how many seconds the limit should be lifted again.
@@ -47,7 +51,9 @@ public final class ValorantClient: Identifiable, Codable {
 
 /// How Riot's API represents an error it encountered.
 public struct RiotError: Decodable {
+	/// A programmer-facing representation of the error that occurred, in `SCREAMING_SNAKE_CASE`.
 	public var errorCode: String
+	/// A human-readable description of the error.
 	public var message: String
 }
 
@@ -115,6 +121,8 @@ private final class Client: Identifiable, Protoclient, Codable {
 				throw APIError.tokenFailure(message: error.message)
 			case "SCHEDULED_DOWNTIME":
 				throw APIError.scheduledDowntime(message: error.message)
+			case "RESOURCE_NOT_FOUND":
+				throw APIError.resourceNotFound
 			default:
 				throw APIError.badResponseCode(code, response, error)
 			}
@@ -165,6 +173,11 @@ enum BaseURLs {
 	
 	static func gameAPI(region: Region) -> URL {
 		URL(string: "https://pd.\(region.subdomain).a.pvp.net")!
+	}
+	
+	static func liveGameAPI(region: Region) -> URL {
+		// TODO: test with other regions—just using the subdomain twice feels wrong…
+		URL(string: "https://glz-\(region.subdomain)-1.\(region.subdomain).a.pvp.net")!
 	}
 }
 
