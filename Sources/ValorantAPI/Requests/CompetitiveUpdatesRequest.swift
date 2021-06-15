@@ -12,11 +12,16 @@ extension ValorantClient {
 		startIndex: Int = 0,
 		endIndex: Int? = nil
 	) async throws -> [CompetitiveUpdate] {
-		try await send(CompetitiveUpdatesRequest(
-			userID: userID,
-			startIndex: startIndex, endIndex: endIndex ?? (startIndex + 20),
-			queue: queue
-		)).matches
+		do {
+			return try await send(CompetitiveUpdatesRequest(
+				userID: userID,
+				startIndex: startIndex, endIndex: endIndex ?? (startIndex + 20),
+				queue: queue
+			)).matches
+		} catch ValorantClient.APIError.badResponseCode(400, _, let riotError?)
+					where riotError.errorCode == "BAD_PARAMETER" {
+			return [] // probably just no matches this far back yet
+		}
 	}
 }
 
