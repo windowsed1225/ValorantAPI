@@ -29,7 +29,10 @@ extension ValorantClient {
 	}
 	
 	/// Selects or locks in an agent.
-	public func pickAgent(_ agentID: Agent.ID, in matchID: Match.ID, shouldLock: Bool) async throws {
+	public func pickAgent(
+		_ agentID: Agent.ID, in matchID: Match.ID,
+		shouldLock: Bool
+	) async throws -> LivePregameInfo {
 		try await send(PickAgentRequest(
 			matchID: matchID, agentID: agentID,
 			shouldLock: shouldLock,
@@ -38,12 +41,12 @@ extension ValorantClient {
 	}
 	
 	/// Selects an agent without locking in.
-	public func selectAgent(_ agentID: Agent.ID, in matchID: Match.ID) async throws {
+	public func selectAgent(_ agentID: Agent.ID, in matchID: Match.ID) async throws -> LivePregameInfo {
 		try await pickAgent(agentID, in: matchID, shouldLock: false)
 	}
 	
 	/// Locks in an agent (ideally previously selected).
-	public func lockInAgent(_ agentID: Agent.ID, in matchID: Match.ID) async throws {
+	public func lockInAgent(_ agentID: Agent.ID, in matchID: Match.ID) async throws -> LivePregameInfo {
 		try await pickAgent(agentID, in: matchID, shouldLock: true)
 	}
 }
@@ -76,7 +79,7 @@ private struct LiveMatchInfoRequest<Response: Decodable>: GetJSONRequest, LiveGa
 	}
 }
 
-private struct PickAgentRequest: GetRequest, StatusCodeRequest, LiveGameRequest {
+private struct PickAgentRequest: GetJSONRequest, LiveGameRequest {
 	var httpMethod: String { "POST" }
 	
 	var matchID: Match.ID
@@ -89,6 +92,8 @@ private struct PickAgentRequest: GetRequest, StatusCodeRequest, LiveGameRequest 
 	var path: String {
 		"v1/matches/\(matchID.apiValue)/\(shouldLock ? "lock" : "select")/\(agentID.apiValue)"
 	}
+	
+	typealias Response = LivePregameInfo
 }
 
 private protocol LiveGameRequest: Request {

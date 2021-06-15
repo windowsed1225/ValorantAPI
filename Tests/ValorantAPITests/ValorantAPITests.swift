@@ -5,6 +5,8 @@ import Protoquest
 final class ValorantAPITests: XCTestCase {
 	static let playerID = Player.ID(stringValue: "3fa8598d-066e-5bdb-998c-74c015c5dba5")!
 	static let liveMatchID = Match.ID(stringValue: "a6e7cba8-a4ef-4aae-b775-4eb61e43a0d1")!
+	static let sovaID = Agent.ID(stringValue: "320b2a48-4d9b-a075-30f1-1f93a9b638fa")!
+	static let reynaID = Agent.ID(stringValue: "a3bfb853-43b2-7238-a4f1-ad90e9e46bcc")!
 	
 	func testAuthentication() async throws {
 		_ = try await authenticate()
@@ -65,6 +67,32 @@ final class ValorantAPITests: XCTestCase {
 		
 		XCTAssertEqual(matchInfo.id, matchID)
 		XCTAssert(matchInfo.players.map(\.id).contains(Self.playerID))
+	}
+	
+	func testPicking() async throws {
+		let client = try await authenticate()
+		
+		try await testCommunication {
+			let updatedInfo = try await client.selectAgent(Self.sovaID, in: Self.liveMatchID)
+			let player = updatedInfo.team.players.first { $0.id == Self.playerID }!
+			XCTAssertEqual(player.agentID, Self.sovaID)
+			XCTAssertEqual(player.agentSelectionState, .selected)
+		} expecting: {
+			ExpectedRequest(to: "https://glz-eu-1.eu.a.pvp.net/pregame/v1/matches/a6e7cba8-a4ef-4aae-b775-4eb61e43a0d1/select/320b2a48-4d9b-a075-30f1-1f93a9b638fa")
+				.post()
+				.responseBody(fileNamed: "responses/live_select_sova")
+		}
+		
+		try await testCommunication {
+			let updatedInfo = try await client.lockInAgent(Self.reynaID, in: Self.liveMatchID)
+			let player = updatedInfo.team.players.first { $0.id == Self.playerID }!
+			XCTAssertEqual(player.agentID, Self.reynaID)
+			XCTAssertEqual(player.agentSelectionState, .locked)
+		} expecting: {
+			ExpectedRequest(to: "https://glz-eu-1.eu.a.pvp.net/pregame/v1/matches/a6e7cba8-a4ef-4aae-b775-4eb61e43a0d1/lock/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc")
+				.post()
+				.responseBody(fileNamed: "responses/live_lock_reyna")
+		}
 	}
 	
 	func authenticate() async throws -> ValorantClient {
