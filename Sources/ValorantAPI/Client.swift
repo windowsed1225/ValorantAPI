@@ -11,8 +11,16 @@ public final class ValorantClient: Identifiable, Codable {
 	}
 	
 	/// Attempts to authenticate with the given credentials and, as a result, publishes a client instance initialized with the necessary tokens.
-	public static func authenticated(username: String, password: String, region: Region) async throws -> ValorantClient {
-		let client = try await Client.authenticated(username: username, password: password, region: region)
+	public static func authenticated(
+		username: String, password: String,
+		region: Region,
+		sessionOverride: URLSession? = nil
+	) async throws -> ValorantClient {
+		let client = try await Client.authenticated(
+			username: username, password: password,
+			region: region,
+			sessionOverride: sessionOverride
+		)
 		return Self(client: client)
 	}
 	
@@ -57,6 +65,7 @@ public struct RiotError: Decodable {
 	public var message: String
 }
 
+// TODO: make this an actor to avoid data races
 private final class Client: Identifiable, Protoclient, Codable {
 	typealias APIError = ValorantClient.APIError
 	
@@ -68,7 +77,7 @@ private final class Client: Identifiable, Protoclient, Codable {
 	var responseDecoder: JSONDecoder { ValorantClient.responseDecoder }
 	
 	let region: Region
-	let session = URLSession(configuration: .ephemeral)
+	private(set) var session: URLSession = .init(configuration: .ephemeral)
 	
 	fileprivate var accessToken: String?
 	fileprivate var entitlementsToken: String?
@@ -76,8 +85,12 @@ private final class Client: Identifiable, Protoclient, Codable {
 	
 	var baseURL: URL { BaseURLs.gameAPI(region: region) }
 	
-	static func authenticated(username: String, password: String, region: Region) async throws -> Client {
-		let client = Client(region: region)
+	static func authenticated(
+		username: String, password: String,
+		region: Region,
+		sessionOverride: URLSession? = nil
+	) async throws -> Client {
+		let client = Client(region: region, sessionOverride: sessionOverride)
 		try await client.establishSession()
 		
 		client.accessToken = try await client.getAccessToken(username: username, password: password)
@@ -85,8 +98,11 @@ private final class Client: Identifiable, Protoclient, Codable {
 		return client
 	}
 	
-	private init(region: Region) {
+	private init(region: Region, sessionOverride: URLSession? = nil) {
 		self.region = region
+		if let sessionOverride = sessionOverride {
+			self.session = sessionOverride
+		}
 	}
 	
 	private static let encodedPlatformInfo = try! JSONEncoder()
