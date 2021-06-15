@@ -96,45 +96,9 @@ private protocol LiveGameRequest: Request {
 	var inPregame: Bool { get }
 }
 
-private let liveGameDecoder = JSONDecoder() <- {
-	$0.keyDecodingStrategy = .convertFromUppercase
-}
-
-extension JSONDecoder.KeyDecodingStrategy {
-	static let convertFromUppercase = custom { path in
-		let key = path.last!.stringValue
-		return AnyKey(
-			stringValue: (key.first?.lowercased() ?? "")
-				+ key.dropFirst()
-		)!
-	}
-	
-	/// This should really be in `Foundation` already…
-	private struct AnyKey: CodingKey {
-		var stringValue: String
-		var intValue: Int?
-		
-		init?(stringValue: String) {
-			self.stringValue = stringValue
-			self.intValue = nil
-		}
-		
-		init?(intValue: Int) {
-			self.stringValue = String(intValue)
-			self.intValue = intValue
-		}
-	}
-}
-
 extension LiveGameRequest {
 	var baseURLOverride: URL? {
 		BaseURLs.liveGameAPI(region: region)
 			.appendingPathComponent(inPregame ? "pregame" : "core-game")
-	}
-}
-
-extension LiveGameRequest where Self: JSONDecodingRequest {
-	func decodeResponse(from raw: Protoresponse) throws -> Response {
-		try raw.decodeJSON(using: liveGameDecoder)
 	}
 }
