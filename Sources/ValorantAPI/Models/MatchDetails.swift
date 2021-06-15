@@ -75,7 +75,7 @@ public struct Team: Codable {
 public struct RoundResult: Codable {
 	public var number: Int
 	
-	public var outcome: String
+	public var outcome: Outcome
 	public var outcomeCode: String
 	public var ceremony: String
 	public var winningTeam: Team.ID
@@ -143,6 +143,20 @@ public struct RoundResult: Codable {
 			public var headshots: Int
 			public var bodyshots: Int
 			public var legshots: Int
+		}
+	}
+	
+	// This actually handles the timer expired case, unlike the outcome code.
+	public struct Outcome: SimpleRawWrapper {
+		public static let eliminatied = Self("Eliminated")
+		public static let timerExpired = Self("Round timer expired")
+		public static let bombDefused = Self("Bomb defused")
+		public static let surrendered = Self("Surrendered")
+		
+		public var rawValue: String
+		
+		public init(_ rawValue: String) {
+			self.rawValue = rawValue
 		}
 	}
 }
@@ -234,7 +248,7 @@ private struct _RoundResult: Decodable {
 private struct APIRoundResult: Decodable {
 	var number: Int
 	
-	var outcome: String
+	var outcome: RoundResult.Outcome
 	var outcomeCode: String
 	var ceremony: String
 	var winningTeam: Team.ID
