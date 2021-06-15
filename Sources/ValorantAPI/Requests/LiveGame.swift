@@ -15,14 +15,14 @@ extension ValorantClient {
 	}
 	
 	/// Gets the pregame (agent select) info for a match in that state.
-	public func getLivePregameInfo(_ matchID: Match.ID) async throws -> LivePregameInfo? {
+	public func getLivePregameInfo(_ matchID: Match.ID) async throws -> LivePregameInfo {
 		try await send(LiveMatchInfoRequest<LivePregameInfo>(
 			matchID: matchID, inPregame: true, region: region
 		))
 	}
 	
 	/// Gets the live game info for a running match.
-	public func getLiveGameInfo(_ matchID: Match.ID) async throws -> LiveGameInfo? {
+	public func getLiveGameInfo(_ matchID: Match.ID) async throws -> LiveGameInfo {
 		try await send(LiveMatchInfoRequest<LiveGameInfo>(
 			matchID: matchID, inPregame: false, region: region
 		))

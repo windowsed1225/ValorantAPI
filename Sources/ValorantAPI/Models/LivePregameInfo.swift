@@ -71,6 +71,10 @@ public struct LivePregameInfo: Codable, Identifiable {
 		public var playerState: PlayerState
 		public var identity: Player.Identity
 		
+		public var isLockedIn: Bool {
+			agentSelectionState == .locked
+		}
+		
 		private enum CodingKeys: String, CodingKey {
 			case id = "Subject"
 			case agentID = "CharacterID"

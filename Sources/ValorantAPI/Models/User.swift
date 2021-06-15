@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents the concept of a user, separate from the auth-provided `UserInfo` or the in-match `Player`.
-public struct User: Codable {
+public struct User: Codable, Identifiable {
 	public typealias ID = ObjectID<Self, UUID>
 	
 	public var id: ID
@@ -28,5 +28,11 @@ public struct User: Codable {
 		self.id = player.id
 		self.gameName = player.gameName
 		self.tagLine = player.tagLine
+	}
+	
+	private enum CodingKeys: String, CodingKey {
+		case id = "Subject"
+		case gameName = "GameName"
+		case tagLine = "TagLine"
 	}
 }
