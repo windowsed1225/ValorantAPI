@@ -42,10 +42,6 @@ public enum Party {
 	public typealias ID = ObjectID<Self, UUID>
 }
 
-public enum Agent {
-	public typealias ID = ObjectID<Self, UUID>
-}
-
 public enum PlayerCard {
 	public typealias ID = ObjectID<Self, UUID>
 }
