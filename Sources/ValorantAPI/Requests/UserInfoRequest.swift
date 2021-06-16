@@ -7,7 +7,7 @@ extension ValorantClient {
 	}
 	
 	public func getUsers(for ids: [User.ID]) async throws -> [User] {
-		try await send(UserInfoRequest(body: ids))
+		try await send(UserInfoRequest(body: ids.map(\.apiValue)))
 	}
 }
 
@@ -19,9 +19,11 @@ private struct OwnUserInfoRequest: JSONJSONRequest, Encodable {
 }
 
 private struct UserInfoRequest: JSONJSONRequest {
+	var httpMethod: String { "PUT" }
+	
 	var path: String { "name-service/v2/players"}
 	
-	var body: [User.ID]
+	var body: [String]
 	
 	typealias Response = [User]
 }
