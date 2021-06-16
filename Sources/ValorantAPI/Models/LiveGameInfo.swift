@@ -1,16 +1,16 @@
 import Foundation
 
 public struct LiveGameInfo: Codable {
-	var id: Match.ID
+	public var id: Match.ID
 	
-	var players: [PlayerInfo]
+	public var players: [PlayerInfo]
 	
-	var state: State
-	var mapID: MapID
-	var modeID: GameModeID
-	var provisioningFlowID: ProvisioningFlowID
-	var matchmakingData: MatchmakingData
-	var isReconnectable: Bool
+	public var state: State
+	public var mapID: MapID
+	public var modeID: GameModeID
+	public var provisioningFlowID: ProvisioningFlowID
+	public var matchmakingData: MatchmakingData
+	public var isReconnectable: Bool
 	
 	private enum CodingKeys: String, CodingKey {
 		case id = "MatchID"
@@ -25,7 +25,7 @@ public struct LiveGameInfo: Codable {
 		case isReconnectable = "IsReconnectable"
 	}
 	
-	struct State: SimpleRawWrapper {
+	public struct State: SimpleRawWrapper {
 		static let inProgress = Self("IN_PROGRESS")
 		
 		public var rawValue: String
@@ -35,9 +35,9 @@ public struct LiveGameInfo: Codable {
 		}
 	}
 	
-	struct MatchmakingData: Codable {
-		var queueID: QueueID
-		var isRanked: Bool
+	public struct MatchmakingData: Codable {
+		public var queueID: QueueID
+		public var isRanked: Bool
 		
 		private enum CodingKeys: String, CodingKey {
 			case queueID = "QueueID"
