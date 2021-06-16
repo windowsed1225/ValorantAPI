@@ -38,6 +38,13 @@ final class DecodingTests: XCTestCase {
 		XCTAssertEqual(gameInfo.players.count, 10)
 	}
 	
+	func testDecodingInventory() throws {
+		let rawInventory = try decode(APIInventory.self, fromJSONNamed: "inventory")
+		let inventory = Inventory(rawInventory)
+		dump(inventory)
+		XCTAssertEqual(inventory.agentsIncludingStarters.count, 15)
+	}
+	
 	private func decode<Value>(
 		_ value: Value.Type = Value.self,
 		fromJSONNamed filename: String

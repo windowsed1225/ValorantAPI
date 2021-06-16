@@ -95,6 +95,18 @@ final class ValorantAPITests: XCTestCase {
 		}
 	}
 	
+	func testInventory() async throws {
+		let client = try await authenticate()
+		
+		try await testCommunication {
+			let inventory = try await client.getInventory(for: Self.playerID)
+			XCTAssertEqual(inventory.agentsIncludingStarters.count, 15)
+		} expecting: {
+			ExpectedRequest(to: "https://pd.eu.a.pvp.net/store/v1/entitlements/3fa8598d-066e-5bdb-998c-74c015c5dba5")
+				.responseBody(fileNamed: "inventory")
+		}
+	}
+	
 	func authenticate() async throws -> ValorantClient {
 		try await testCommunication {
 			try await ValorantClient.authenticated(
