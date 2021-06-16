@@ -57,6 +57,11 @@ private final class VerifyingProtocol: URLProtocol {
 		XCTAssertEqual(request.url!, expected.url)
 		XCTAssertEqual(request.httpMethod!, expected.method)
 		
+		if let expectedBody = expected.requestBody {
+			let actualBody = request.httpBody ?? Data(reading: request.httpBodyStream!)
+			XCTAssertEqual(actualBody.utf8String(), expectedBody.utf8String())
+		}
+		
 		let response = HTTPURLResponse(
 			url: expected.url,
 			statusCode: expected.responseCode,
@@ -72,4 +77,27 @@ private final class VerifyingProtocol: URLProtocol {
 	}
 	
 	override func stopLoading() {}
+}
+
+private extension Data {
+	func utf8String() -> String {
+		String(bytes: self, encoding: .utf8)!
+	}
+	
+	// why this isn't included is beyond me
+	init(reading stream: InputStream) {
+		self.init()
+		
+		stream.open()
+		defer { stream.close() }
+		
+		let bufferSize = 1024
+		let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+		defer { buffer.deallocate() }
+		
+		while stream.hasBytesAvailable {
+			let bytesRead = stream.read(buffer, maxLength: bufferSize)
+			append(buffer, count: bytesRead)
+		}
+	}
 }

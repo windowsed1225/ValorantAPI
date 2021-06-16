@@ -5,6 +5,7 @@ import HandyOperators
 struct ExpectedRequest {
 	let url: URL
 	
+	var requestBody: Data?
 	var method = "GET"
 	var responseCode = 200
 	var responseBody: Data?
@@ -27,6 +28,19 @@ struct ExpectedRequest {
 	
 	func responseCode(_ code: Int) -> Self {
 		self <- { $0.responseCode = code }
+	}
+	
+	func requestBody(_ body: Data) -> Self {
+		self <- { $0.requestBody = body }
+	}
+	
+	func requestBody(_ body: String) -> Self {
+		requestBody(body.data(using: .utf8)!)
+	}
+	
+	func requestBody(fileNamed filename: String) -> Self {
+		let url = Bundle.module.url(forResource: "examples/\(filename)", withExtension: "json")!
+		return requestBody(try! Data(contentsOf: url))
 	}
 	
 	func responseBody(_ body: Data) -> Self {

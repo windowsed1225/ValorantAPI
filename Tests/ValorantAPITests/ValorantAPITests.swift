@@ -107,6 +107,21 @@ final class ValorantAPITests: XCTestCase {
 		}
 	}
 	
+	func testGetUsers() async throws {
+		let client = try await authenticate()
+		
+		try await testCommunication {
+			let users = try await client.getUsers(for: [Self.playerID])
+			XCTAssertEqual(users.count, 1)
+			XCTAssertEqual(users.first?.id, Self.playerID)
+		} expecting: {
+			ExpectedRequest(to: "https://pd.eu.a.pvp.net/name-service/v2/players")
+				.put()
+				.requestBody(#"["3fa8598d-066e-5bdb-998c-74c015c5dba5"]"#)
+				.responseBody(fileNamed: "responses/users")
+		}
+	}
+	
 	func authenticate() async throws -> ValorantClient {
 		try await testCommunication {
 			try await ValorantClient.authenticated(
