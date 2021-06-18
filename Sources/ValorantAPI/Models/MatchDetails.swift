@@ -30,7 +30,7 @@ public struct MatchInfo: Codable, Identifiable {
 	public var provisioningFlowID: String
 	public var isCompleted: Bool
 	public var queueID: QueueID
-	public var gameMode: GameModeID
+	public var gameMode: GameMode.ID
 	public var isRanked: Bool
 	public var canAdvanceContracts: Bool
 	public var seasonID: Season.ID

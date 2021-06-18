@@ -1,12 +1,10 @@
 import Foundation
 
-public struct ProvisioningFlowID: SimpleRawWrapper {
-	public static let matchmaking = Self("Matchmaking")
-	public static let customGame = Self("CustomGame")
-	
-	public var rawValue: String
-	
-	public init(_ rawValue: String) {
-		self.rawValue = rawValue
-	}
+public enum ProvisioningFlow {
+	public typealias ID = ObjectID<Self, String>
+}
+
+public extension ProvisioningFlow.ID {
+	static let matchmaking = Self("Matchmaking")
+	static let customGame = Self("CustomGame")
 }

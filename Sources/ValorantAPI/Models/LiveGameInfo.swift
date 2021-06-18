@@ -7,8 +7,8 @@ public struct LiveGameInfo: Codable {
 	
 	public var state: State
 	public var mapID: MapID
-	public var modeID: GameModeID
-	public var provisioningFlowID: ProvisioningFlowID
+	public var modeID: GameMode.ID
+	public var provisioningFlowID: ProvisioningFlow.ID
 	public var matchmakingData: MatchmakingData
 	public var isReconnectable: Bool
 	

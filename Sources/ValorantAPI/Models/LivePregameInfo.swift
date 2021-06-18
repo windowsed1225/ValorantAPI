@@ -11,10 +11,10 @@ public struct LivePregameInfo: Codable, Identifiable {
 	public var enemyTeamLockCount: Int
 	public var state: State
 	public var mapID: MapID
-	public var modeID: GameModeID
+	public var modeID: GameMode.ID
 	@SpecialOptional(.emptyString)
 	public var queueID: QueueID?
-	public var provisioningFlowID: ProvisioningFlowID
+	public var provisioningFlowID: ProvisioningFlow.ID
 	public var isRanked: Bool
 	public var nanosecondsRemainingInPhase: Int
 	
