@@ -38,10 +38,6 @@ public enum Match {
 	public typealias ID = ObjectID<Self, UUID>
 }
 
-public enum GameMode {
-	public typealias ID = ObjectID<Self, String>
-}
-
 public enum Party {
 	public typealias ID = ObjectID<Self, UUID>
 }
