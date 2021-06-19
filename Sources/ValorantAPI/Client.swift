@@ -24,6 +24,10 @@ public final class ValorantClient: Identifiable, Codable {
 		return Self(client: client)
 	}
 	
+	#if DEBUG
+	public static let mocked = ValorantClient(client: .mocked)
+	#endif
+	
 	private let client: Client
 	
 	var region: Region { client.region }
@@ -97,6 +101,10 @@ private final class Client: Identifiable, Protoclient, Codable {
 		client.entitlementsToken = try await client.getEntitlementsToken()
 		return client
 	}
+	
+	#if DEBUG
+	public static let mocked = Client(region: .europe)
+	#endif
 	
 	private init(region: Region, sessionOverride: URLSession? = nil) {
 		self.region = region
