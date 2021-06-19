@@ -21,19 +21,35 @@ public final class ValorantClient: Identifiable, Codable {
 			region: region,
 			sessionOverride: sessionOverride
 		)
-		return Self(client: client)
+		return Self(client: client, userInfo: try await client.getUserInfo())
 	}
 	
 	#if DEBUG
-	public static let mocked = ValorantClient(client: .mocked)
+	/// A mocked client that's not actually signed in, for testing.
+	public static let mocked = ValorantClient(
+		client: .mocked,
+		userInfo: .init(
+			account: .init(
+				gameName: "Example User",
+				tagLine: "MOCK",
+				createdAt: .init(timeIntervalSinceNow: -1000)
+			),
+			id: .init()
+		)
+	)
 	#endif
+	
+	public let userInfo: UserInfo
+	/// Another representation of ``UserInfo`` that matches other representations but doesn't contain the creation date.
+	public let user: User
+	public var region: Region { client.region }
 	
 	private let client: Client
 	
-	var region: Region { client.region }
-	
-	private init(client: Client) {
+	private init(client: Client, userInfo: UserInfo) {
 		self.client = client
+		self.userInfo = userInfo
+		self.user = .init(userInfo)
 	}
 	
 	func send<R: Request>(_ request: R) async throws -> R.Response {

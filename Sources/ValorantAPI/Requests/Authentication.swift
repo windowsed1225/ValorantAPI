@@ -18,6 +18,10 @@ extension Protoclient {
 		
 		return response.response!.extractAccessToken()
 	}
+	
+	func getUserInfo() async throws -> UserInfo {
+		try await send(OwnUserInfoRequest())
+	}
 }
 
 public struct AuthenticationError: LocalizedError {
@@ -89,13 +93,15 @@ private struct AuthenticationResponse: Decodable {
 	}
 }
 
-private struct CommunicationMetadata: Codable {
-	var type: AuthMessageType
-	var country: String
-}
-
 private enum AuthMessageType: String, Hashable, Codable {
 	case auth
 	case response
 	case error
+}
+
+private struct OwnUserInfoRequest: JSONJSONRequest, Encodable {
+	var baseURLOverride: URL? { BaseURLs.auth }
+	var path: String { "userinfo" }
+	
+	typealias Response = UserInfo
 }

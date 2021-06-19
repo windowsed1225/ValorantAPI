@@ -3,11 +3,11 @@ import Protoquest
 import HandyOperators
 
 extension ValorantClient {
-	/// Gets the live match (or pregame/agent select) a player is currently in. Can only be applied to the currently-signed-in user.
-	public func getLiveMatch(for playerID: Player.ID, inPregame: Bool) async throws -> Match.ID? {
+	/// Gets the live match (or pregame/agent select) a player is currently in.
+	public func getLiveMatch(inPregame: Bool) async throws -> Match.ID? {
 		do {
 			return try await send(LivePlayerInfoRequest(
-				playerID: playerID, inPregame: inPregame, region: region
+				playerID: user.id, inPregame: inPregame, region: region
 			)).matchID
 		} catch APIError.resourceNotFound {
 			return nil

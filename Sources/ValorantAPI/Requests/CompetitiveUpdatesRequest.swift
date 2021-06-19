@@ -7,14 +7,14 @@ extension ValorantClient {
 	///
 	/// Note that this is not limited to competitive games by default, though it is filterable by queue.
 	public func getCompetitiveUpdates(
-		userID: Player.ID,
+		userID: Player.ID? = nil,
 		queue: QueueID? = nil,
 		startIndex: Int = 0,
 		endIndex: Int? = nil
 	) async throws -> [CompetitiveUpdate] {
 		do {
 			return try await send(CompetitiveUpdatesRequest(
-				userID: userID,
+				userID: userID ?? userInfo.id,
 				startIndex: startIndex, endIndex: endIndex ?? (startIndex + 20),
 				queue: queue
 			)).matches
