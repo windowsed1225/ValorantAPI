@@ -24,7 +24,7 @@ private struct MatchHistoryRequest: GetJSONRequest {
 	var queue: QueueID?
 	
 	var path: String {
-		"/match-history/v1/history/\(userID.apiValue)"
+		"/match-history/v1/history/\(userID)"
 	}
 	
 	var urlParams: [URLParameter] {

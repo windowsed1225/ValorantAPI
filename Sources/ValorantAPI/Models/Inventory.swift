@@ -15,8 +15,8 @@ public struct Inventory: Codable {
 		)
 		
 		func collectItems<ID>(_ type: ItemCollection.ID) -> Set<ID>
-		where ID: SimpleRawWrapper, ID.RawValue == UUID {
-			Set(collections[type]!.items.map(\.id).map(ID.init(_:)))
+		where ID: ObjectIDProtocol, ID.RawID == LowercaseUUID {
+			Set(collections[type]!.items.map(\.id).map(ID.init(rawID:)))
 		}
 		
 		agents = collectItems(.agents)
@@ -29,9 +29,9 @@ public struct Inventory: Codable {
 }
 
 private extension ItemCollection.ID {
-	static let agents = Self(stringValue: "01bb38e1-da47-4e6a-9b3d-945fe4655707")!
-	static let cards = Self(stringValue: "3f296c07-64c3-494c-923b-fe692a4fa1bd")!
-	static let titles = Self(stringValue: "de7caa6b-adf7-4588-bbd1-143831e786c6")!
+	static let agents = Self("01bb38e1-da47-4e6a-9b3d-945fe4655707")!
+	static let cards = Self("3f296c07-64c3-494c-923b-fe692a4fa1bd")!
+	static let titles = Self("de7caa6b-adf7-4588-bbd1-143831e786c6")!
 }
 
 /// The way the API describes the player inventory, which is really general and really impractical. You're probably looking for ``Inventory``.
@@ -44,7 +44,7 @@ public struct APIInventory: Decodable {
 }
 
 private struct ItemCollection: Decodable {
-	typealias ID = ObjectID<Self, UUID>
+	typealias ID = ObjectID<Self, LowercaseUUID>
 	
 	var id: ID
 	var items: [Item]
@@ -56,8 +56,8 @@ private struct ItemCollection: Decodable {
 }
 
 private struct Item: Decodable {
-	var typeID: UUID
-	var id: UUID
+	var typeID: LowercaseUUID
+	var id: LowercaseUUID
 	
 	private enum CodingKeys: String, CodingKey {
 		case typeID = "TypeID"

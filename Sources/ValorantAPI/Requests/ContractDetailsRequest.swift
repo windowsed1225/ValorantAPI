@@ -12,7 +12,7 @@ private struct ContractDetailsRequest: GetJSONRequest {
 	var playerID: Player.ID
 	
 	var path: String {
-		"/contracts/v1/contracts/\(playerID.apiValue)"
+		"/contracts/v1/contracts/\(playerID)"
 	}
 	
 	typealias Response = ContractDetails

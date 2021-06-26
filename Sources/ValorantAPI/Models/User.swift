@@ -2,7 +2,7 @@ import Foundation
 
 /// Represents the concept of a user, separate from the auth-provided `UserInfo` or the in-match `Player`.
 public struct User: Codable, Identifiable {
-	public typealias ID = ObjectID<Self, UUID>
+	public typealias ID = ObjectID<Self, LowercaseUUID>
 	
 	public var id: ID
 	public var gameName: String

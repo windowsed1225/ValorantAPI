@@ -12,7 +12,7 @@ private struct InventoryRequest: GetJSONRequest {
 	var playerID: Player.ID
 	
 	var path: String {
-		"store/v1/entitlements/\(playerID.apiValue)"
+		"store/v1/entitlements/\(playerID)"
 	}
 	
 	typealias Response = APIInventory

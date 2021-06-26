@@ -11,7 +11,7 @@ private struct MatchDetailsRequest: GetJSONRequest {
 	var matchID: Match.ID
 	
 	var path: String {
-		"/match-details/v1/matches/\(matchID.apiValue)"
+		"/match-details/v1/matches/\(matchID)"
 	}
 	
 	typealias Response = MatchDetails

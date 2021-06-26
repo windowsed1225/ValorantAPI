@@ -3,7 +3,7 @@ import Protoquest
 
 extension ValorantClient {
 	public func getUsers(for ids: [User.ID]) async throws -> [User] {
-		try await send(UserInfoRequest(body: ids.map(\.apiValue)))
+		try await send(UserInfoRequest(body: ids))
 	}
 }
 
@@ -12,7 +12,7 @@ private struct UserInfoRequest: JSONJSONRequest {
 	
 	var path: String { "name-service/v2/players"}
 	
-	var body: [String]
+	var body: [User.ID]
 	
 	typealias Response = [User]
 }

@@ -26,7 +26,7 @@ public struct ContractDetails: Codable {
 }
 
 public struct Contract: Codable, Identifiable {
-	public typealias ID = ObjectID<Self, UUID>
+	public typealias ID = ObjectID<Self, LowercaseUUID>
 	public var id: ID
 	
 	public var progression: Progression
@@ -42,10 +42,10 @@ public struct Contract: Codable, Identifiable {
 	
 	public struct Progression: Codable {
 		public var totalEarned: Int
-		public var highestRewardedLevel: [UUID: Int] { _highestRewardedLevel }
+		public var highestRewardedLevel: [LowercaseUUID: Int] { _highestRewardedLevel }
 		
 		@StringKeyedDictionary
-		private var _highestRewardedLevel: [UUID: Int]
+		private var _highestRewardedLevel: [LowercaseUUID: Int]
 		
 		private enum CodingKeys: String, CodingKey {
 			case totalEarned = "TotalProgressionEarned"
@@ -55,7 +55,7 @@ public struct Contract: Codable, Identifiable {
 }
 
 public struct Mission: Codable, Identifiable {
-	public typealias ID = ObjectID<Self, UUID>
+	public typealias ID = ObjectID<Self, LowercaseUUID>
 	public var id: ID
 	
 	public var objectiveProgress: [Objective.ID: Int] { _objectiveProgress }
@@ -74,5 +74,5 @@ public struct Mission: Codable, Identifiable {
 }
 
 public enum Objective {
-	public typealias ID = ObjectID<Self, UUID>
+	public typealias ID = ObjectID<Self, LowercaseUUID>
 }

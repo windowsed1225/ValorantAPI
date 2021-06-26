@@ -32,7 +32,7 @@ private struct CompetitiveUpdatesRequest: GetJSONRequest {
 	var queue: QueueID?
 	
 	var path: String {
-		"/mmr/v1/players/\(userID.apiValue)/competitiveupdates"
+		"/mmr/v1/players/\(userID)/competitiveupdates"
 	}
 	
 	var urlParams: [URLParameter] {
