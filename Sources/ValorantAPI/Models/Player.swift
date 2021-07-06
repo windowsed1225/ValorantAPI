@@ -16,11 +16,22 @@ public struct Player: Codable, Identifiable {
 	public var stats: Stats
 	public var damageDealtByRound: [DamageDealt]?
 	
+	public var accountLevel: Int
 	public var sessionPlaytimeMinutes: Int?
 	public var behaviorFactors: BehaviorFactors?
 	
 	public var name: String {
 		"\(gameName) #\(tagLine)"
+	}
+	
+	public var identity: Identity {
+		.init(
+			id: id,
+			cardID: playerCardID,
+			titleID: playerTitleID,
+			accountLevel: accountLevel,
+			isIncognito: false
+		)
 	}
 	
 	private enum CodingKeys: String, CodingKey {
@@ -36,6 +47,7 @@ public struct Player: Codable, Identifiable {
 		case competitiveTier
 		case playerCardID = "playerCard"
 		case playerTitleID = "playerTitle"
+		case accountLevel
 		case sessionPlaytimeMinutes
 		case behaviorFactors
 	}
