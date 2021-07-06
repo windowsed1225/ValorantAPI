@@ -6,10 +6,14 @@ public struct SpecialOptional<Strategy: SpecialOptionalStrategy, Value: Codable>
 	
 	public init(from decoder: Decoder) throws {
 		let container = try decoder.singleValueContainer()
-		let rawValue = try container.decode(Strategy.Value.self)
-		wrappedValue = Strategy.isNil(rawValue)
-			? nil
-			: try container.decode(Value.self)
+		let isNil = try container.decodeNil() // for compatibility with re-encoding
+			|| Strategy.isNil(container.decode(Strategy.Value.self))
+		wrappedValue = isNil ? nil : try container.decode(Value.self)
+	}
+	
+	public func encode(to encoder: Encoder) throws {
+		var container = encoder.singleValueContainer()
+		try container.encode(wrappedValue)
 	}
 	
 	public init(strategy: Strategy.Type = Strategy.self, wrappedValue: Value? = nil) {
