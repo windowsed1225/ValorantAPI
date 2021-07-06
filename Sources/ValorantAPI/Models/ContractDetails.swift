@@ -42,14 +42,12 @@ public struct Contract: Codable, Identifiable {
 	
 	public struct Progression: Codable {
 		public var totalEarned: Int
-		public var highestRewardedLevel: [LowercaseUUID: Int] { _highestRewardedLevel }
-		
-		@StringKeyedDictionary
-		private var _highestRewardedLevel: [LowercaseUUID: Int]
+		@_StringKeyedDictionary
+		public var highestRewardedLevel: [LowercaseUUID: Int]
 		
 		private enum CodingKeys: String, CodingKey {
 			case totalEarned = "TotalProgressionEarned"
-			case _highestRewardedLevel = "HighestRewardedLevel"
+			case highestRewardedLevel = "HighestRewardedLevel"
 		}
 	}
 }
@@ -58,16 +56,14 @@ public struct Mission: Codable, Identifiable {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 	public var id: ID
 	
-	public var objectiveProgress: [Objective.ID: Int] { _objectiveProgress }
+	@_StringKeyedDictionary
+	public var objectiveProgress: [Objective.ID: Int]
 	public var isComplete: Bool
 	public var expirationTime: Date
 	
-	@StringKeyedDictionary
-	private var _objectiveProgress: [Objective.ID: Int]
-	
 	private enum CodingKeys: String, CodingKey {
 		case id = "ID"
-		case _objectiveProgress = "Objectives"
+		case objectiveProgress = "Objectives"
 		case isComplete = "Complete"
 		case expirationTime = "ExpirationTime"
 	}
