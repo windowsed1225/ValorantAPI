@@ -8,7 +8,7 @@ extension Protoclient {
 }
 
 private struct EntitlementsTokenRequest: JSONJSONRequest, Encodable {
-	var baseURLOverride: URL? { BaseURLs.entitlements }
+	var baseURLOverride: URL? { BaseURLs.entitlementsAPI }
 	var path: String { "token/v1" }
 	
 	struct Response: Decodable {

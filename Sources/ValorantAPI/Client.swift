@@ -209,7 +209,7 @@ extension Decoder {
 enum BaseURLs {
 	static let auth = URL(string: "https://auth.riotgames.com")!
 	static let authAPI = auth.appendingPathComponent("api/v1")
-	static let entitlements = URL(string: "https://entitlements.auth.riotgames.com/api")!
+	static let entitlementsAPI = URL(string: "https://entitlements.auth.riotgames.com/api")!
 	
 	static func gameAPI(region: Region) -> URL {
 		URL(string: "https://pd.\(region.subdomain).a.pvp.net")!
