@@ -8,6 +8,12 @@ final class DecodingTests: XCTestCase {
 		XCTAssertEqual(matches.count, 20)
 	}
 	
+	func testDecodingCompSummary() throws {
+		let summary = try decode(CompetitiveSummary.self, fromJSONNamed: "comp_summary")
+		dump(summary)
+		//XCTAssertEqual(matches.count, 20)
+	}
+	
 	func testDecodingMatch() throws {
 		let details = try decode(MatchDetails.self, fromJSONNamed: "match")
 		//dump(details)
