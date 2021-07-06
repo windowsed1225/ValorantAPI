@@ -1,0 +1,24 @@
+{
+	"country": "che",
+	"sub": "3fa8598d-066e-5bdb-998c-74c015c5dba5",
+	"email_verified": true,
+	"player_plocale": "en-GB",
+	"country_at": null,
+	"player_locale": "en-GB",
+	"pw": {
+		"cng_at": 1522763228000,
+		"reset": false,
+		"must_reset": false
+	},
+	"phone_number_verified": false,
+	"acct": {
+		"type": 0,
+		"state": "ENABLED",
+		"adm": false,
+		"game_name": "Julian",
+		"tag_line": "665",
+		"created_at": 1336409731000
+	},
+	"jti": "<redacted>",
+	"ppid": null
+}

@@ -3,10 +3,10 @@ import Protoquest
 @testable import ValorantAPI
 
 final class ValorantAPITests: XCTestCase {
-	static let playerID = Player.ID(stringValue: "3fa8598d-066e-5bdb-998c-74c015c5dba5")!
-	static let liveMatchID = Match.ID(stringValue: "a6e7cba8-a4ef-4aae-b775-4eb61e43a0d1")!
-	static let sovaID = Agent.ID(stringValue: "320b2a48-4d9b-a075-30f1-1f93a9b638fa")!
-	static let reynaID = Agent.ID(stringValue: "a3bfb853-43b2-7238-a4f1-ad90e9e46bcc")!
+	static let playerID = Player.ID("3fa8598d-066e-5bdb-998c-74c015c5dba5")!
+	static let liveMatchID = Match.ID("a6e7cba8-a4ef-4aae-b775-4eb61e43a0d1")!
+	static let sovaID = Agent.ID("320b2a48-4d9b-a075-30f1-1f93a9b638fa")!
+	static let reynaID = Agent.ID("a3bfb853-43b2-7238-a4f1-ad90e9e46bcc")!
 	
 	func testAuthentication() async throws {
 		_ = try await authenticate()
@@ -16,7 +16,7 @@ final class ValorantAPITests: XCTestCase {
 		let client = try await authenticate()
 		
 		try await testCommunication {
-			let matchID = try await client.getLiveMatch(for: Self.playerID, inPregame: true)
+			let matchID = try await client.getLiveMatch(inPregame: true)
 			XCTAssertNil(matchID)
 		} expecting: {
 			ExpectedRequest(to: "https://glz-eu-1.eu.a.pvp.net/pregame/v1/players/3fa8598d-066e-5bdb-998c-74c015c5dba5")
@@ -29,7 +29,7 @@ final class ValorantAPITests: XCTestCase {
 		let client = try await authenticate()
 		
 		let matchID = try await testCommunication {
-			try await client.getLiveMatch(for: Self.playerID, inPregame: true)!
+			try await client.getLiveMatch(inPregame: true)!
 		} expecting: {
 			ExpectedRequest(to: "https://glz-eu-1.eu.a.pvp.net/pregame/v1/players/3fa8598d-066e-5bdb-998c-74c015c5dba5")
 				.responseBody(fileNamed: "responses/live_player_info")
@@ -51,7 +51,7 @@ final class ValorantAPITests: XCTestCase {
 		let client = try await authenticate()
 		
 		let matchID = try await testCommunication {
-			try await client.getLiveMatch(for: Self.playerID, inPregame: false)!
+			try await client.getLiveMatch(inPregame: false)!
 		} expecting: {
 			ExpectedRequest(to: "https://glz-eu-1.eu.a.pvp.net/core-game/v1/players/3fa8598d-066e-5bdb-998c-74c015c5dba5")
 				.responseBody(fileNamed: "responses/live_player_info")
@@ -141,6 +141,11 @@ final class ValorantAPITests: XCTestCase {
 			ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
 				.post()
 				.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
+			
+			ExpectedRequest(to: "https://auth.riotgames.com/userinfo")
+				.post()
+				.requestBody("{}")
+				.responseBody(fileNamed: "responses/userinfo")
 		}
 	}
 }

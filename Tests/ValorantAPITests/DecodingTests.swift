@@ -14,10 +14,10 @@ final class DecodingTests: XCTestCase {
 		XCTAssertEqual(details.players.count, 10)
 	}
 	
-	func testDecodingEscalation() throws {
-		let details = try decode(MatchDetails.self, fromJSONNamed: "escalation")
+	func testDecodingDeathmatch() throws {
+		let details = try decode(MatchDetails.self, fromJSONNamed: "deathmatch")
 		//dump(details)
-		XCTAssertEqual(details.players.count, 10)
+		XCTAssertEqual(details.players.count, 14)
 	}
 	
 	func testDecodingContracts() throws {
