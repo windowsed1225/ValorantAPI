@@ -24,9 +24,28 @@ public struct CompetitiveSummary: Codable, Identifiable {
 		public var totalGamesNeededForRating: Int
 		public var totalGamesNeededForLeaderboard: Int
 		public var gamesNeededForRatingThisSeason: Int
+		public var bySeason: [Season.ID: SeasonInfo]?
 		
-		@_StringKeyedDictionary
-		public var bySeason: [Season.ID: SeasonInfo]
+		public init(from decoder: Decoder) throws {
+			let container = try decoder.container(keyedBy: CodingKeys.self)
+			
+			totalGamesNeededForRating = try container.decode(Int.self, forKey: .totalGamesNeededForRating)
+			totalGamesNeededForLeaderboard = try container.decode(Int.self, forKey: .totalGamesNeededForLeaderboard)
+			gamesNeededForRatingThisSeason = try container.decode(Int.self, forKey: .gamesNeededForRatingThisSeason)
+			
+			// ugh
+			if decoder.isDecodingFromRiot {
+				bySeason = try container.decodeIfPresent(
+					_StringKeyedDictionary<Season.ID, SeasonInfo>.self,
+					forKey: .bySeason
+				)?.wrappedValue
+			} else {
+				bySeason = try container.decodeIfPresent(
+					[Season.ID: SeasonInfo].self,
+					forKey: .bySeason
+				)
+			}
+		}
 		
 		private enum CodingKeys: String, CodingKey {
 			case totalGamesNeededForRating = "TotalGamesNeededForRating"
