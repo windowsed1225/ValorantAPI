@@ -16,7 +16,8 @@ public struct Player: Codable, Identifiable {
 	public var stats: Stats
 	public var damageDealtByRound: [DamageDealt]?
 	
-	public var accountLevel: Int
+	/// May be `nil` for older matches before this was introduced.
+	public var accountLevel: Int?
 	public var sessionPlaytimeMinutes: Int?
 	public var behaviorFactors: BehaviorFactors?
 	
@@ -29,7 +30,7 @@ public struct Player: Codable, Identifiable {
 			id: id,
 			cardID: playerCardID,
 			titleID: playerTitleID,
-			accountLevel: accountLevel,
+			accountLevel: accountLevel ?? 0,
 			isIncognito: false
 		)
 	}
