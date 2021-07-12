@@ -2,6 +2,17 @@ import Foundation
 
 public enum GameMode {
 	public struct ID: SimpleRawWrapper {
+		public static let standard = Self("GameModes/Bomb/BombGameMode")
+		public static let spikeRush = Self("GameModes/QuickBomb/QuickBombGameMode")
+		public static let deathmatch = Self("GameModes/Deathmatch/DeathmatchGameMode")
+		
+		public static let snowballFight = Self("GameModes/SnowballFight/SnowballFightGameMode")
+		public static let escalation = Self("GameModes/GunGame/GunGameTeamsGameMode")
+		public static let replication = Self("GameModes/OneForAll/OneForAll_GameMode")
+		
+		public static let onboarding = Self("GameModes/NewPlayerExperience/NPEGameMode")
+		public static let practice = Self("GameModes/ShootingRange/ShootingRangeGameMode")
+		
 		public var rawValue: String
 		
 		public init(_ rawValue: String) {
