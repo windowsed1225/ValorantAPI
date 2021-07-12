@@ -16,11 +16,15 @@ public struct ContractDetails: Codable {
 	
 	public struct MissionMetadata: Codable {
 		public var hasCompletedNewPlayerExperience: Bool
-		public var weeklyCheckpoint: Date
+		/// Can be nil for accounts that haven't completed any weeklies this act.
+		public var weeklyCheckpoint: Date?
+		/// When the next set of weekly missions will become available.
+		public var weeklyRefillTime: Date?
 		
 		private enum CodingKeys: String, CodingKey {
 			case hasCompletedNewPlayerExperience = "NPECompleted"
 			case weeklyCheckpoint = "WeeklyCheckpoint"
+			case weeklyRefillTime = "WeeklyRefillTime"
 		}
 	}
 }
