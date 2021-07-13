@@ -57,7 +57,7 @@ private struct LivePlayerInfoRequest: GetJSONRequest, LiveGameRequest {
 	var region: Region
 	
 	var path: String {
-		"v1/players/\(playerID)"
+		"/v1/players/\(playerID)"
 	}
 	
 	struct Response: Decodable {
@@ -75,7 +75,7 @@ private struct LiveMatchInfoRequest<Response: Decodable>: GetJSONRequest, LiveGa
 	var region: Region
 	
 	var path: String {
-		"v1/matches/\(matchID)"
+		"/v1/matches/\(matchID)"
 	}
 }
 
@@ -90,7 +90,7 @@ private struct PickAgentRequest: GetJSONRequest, LiveGameRequest {
 	var region: Region
 	
 	var path: String {
-		"v1/matches/\(matchID)/\(shouldLock ? "lock" : "select")/\(agentID)"
+		"/v1/matches/\(matchID)/\(shouldLock ? "lock" : "select")/\(agentID)"
 	}
 	
 	typealias Response = LivePregameInfo
