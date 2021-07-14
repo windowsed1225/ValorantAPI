@@ -141,11 +141,6 @@ final class ValorantAPITests: XCTestCase {
 			ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
 				.post()
 				.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
-			
-			ExpectedRequest(to: "https://auth.riotgames.com/userinfo")
-				.post()
-				.requestBody("{}")
-				.responseBody(fileNamed: "responses/userinfo")
 		}
 	}
 }
