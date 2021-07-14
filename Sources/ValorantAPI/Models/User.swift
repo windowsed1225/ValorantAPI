@@ -18,12 +18,6 @@ public struct User: Codable, Identifiable {
 		self.tagLine = tagLine
 	}
 	
-	public init(_ info: UserInfo) {
-		self.id = info.id
-		self.gameName = info.account.gameName
-		self.tagLine = info.account.tagLine
-	}
-	
 	public init(_ player: Player) {
 		self.id = player.id
 		self.gameName = player.gameName
