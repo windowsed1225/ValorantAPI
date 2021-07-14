@@ -7,7 +7,7 @@ extension ValorantClient {
 	public func getLiveMatch(inPregame: Bool) async throws -> Match.ID? {
 		do {
 			return try await send(LivePlayerInfoRequest(
-				playerID: user.id, inPregame: inPregame, region: region
+				playerID: userID, inPregame: inPregame, region: region
 			)).matchID
 		} catch APIError.resourceNotFound {
 			return nil

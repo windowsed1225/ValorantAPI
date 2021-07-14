@@ -14,7 +14,7 @@ extension ValorantClient {
 	) async throws -> [CompetitiveUpdate] {
 		do {
 			return try await send(CompetitiveUpdatesRequest(
-				userID: userID ?? userInfo.id,
+				userID: userID ?? self.userID,
 				startIndex: startIndex, endIndex: endIndex ?? (startIndex + 20),
 				queue: queue
 			)).matches

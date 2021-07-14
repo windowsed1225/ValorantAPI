@@ -21,35 +21,27 @@ public final class ValorantClient: Identifiable, Codable {
 			region: region,
 			sessionOverride: sessionOverride
 		)
-		return Self(client: client, userInfo: try await client.getUserInfo())
+		return try Self(client: client)
 	}
 	
 	#if DEBUG
 	/// A mocked client that's not actually signed in, for testing.
-	public static let mocked = ValorantClient(
-		client: .mocked,
-		userInfo: .init(
-			account: .init(
-				gameName: "Example User",
-				tagLine: "MOCK",
-				createdAt: .init(timeIntervalSinceNow: -1000)
-			),
-			id: .init()
-		)
-	)
+	public static let mocked = try! ValorantClient()
+	
+	private init() throws {
+		self.client = .mocked
+		self.userID = .init()
+	}
 	#endif
 	
-	public let userInfo: UserInfo
-	/// Another representation of ``UserInfo`` that matches other representations but doesn't contain the creation date.
-	public let user: User
+	public let userID: User.ID
 	public var region: Region { client.region }
 	
 	private let client: Client
 	
-	private init(client: Client, userInfo: UserInfo) {
+	private init(client: Client) throws {
 		self.client = client
-		self.userInfo = userInfo
-		self.user = .init(userInfo)
+		self.userID = try client.extractUserIDFromAccessToken()
 	}
 	
 	func send<R: Request>(_ request: R) async throws -> R.Response {
@@ -77,6 +69,41 @@ public final class ValorantClient: Identifiable, Codable {
 	}
 }
 
+extension Client {
+	func extractUserIDFromAccessToken() throws -> User.ID {
+		let tokenParts = try accessToken?.split(separator: ".")
+			??? AccessTokenExtractionError.tokenMissing
+		
+		let tokenInfoIndex = 1
+		guard tokenParts.indices.contains(tokenInfoIndex) else {
+			throw AccessTokenExtractionError.notEnoughParts(tokenParts.count)
+		}
+		
+		// this initializer requires padding (to a multiple of 4) but ignores excess padding, so let's just ensure we have enough
+		let base64String = "\(tokenParts[tokenInfoIndex])==="
+		let rawTokenInfo = try Data(base64Encoded: base64String)
+			??? AccessTokenExtractionError.base64DecodingFailed(base64String)
+		
+		do {
+			return try responseDecoder.decode(AccessTokenInfo.self, from: rawTokenInfo).sub
+		} catch let error as DecodingError {
+			throw AccessTokenExtractionError.decodingError(error)
+		}
+	}
+	
+	private struct AccessTokenInfo: Decodable {
+		let sub: User.ID
+		// don't care about the rest
+	}
+	
+	private enum AccessTokenExtractionError: Error {
+		case tokenMissing
+		case notEnoughParts(Int)
+		case base64DecodingFailed(String)
+		case decodingError(DecodingError)
+	}
+}
+
 /// How Riot's API represents an error it encountered.
 public struct RiotError: Decodable {
 	/// A programmer-facing representation of the error that occurred, in `SCREAMING_SNAKE_CASE`.
@@ -99,7 +126,7 @@ private final class Client: Identifiable, Protoclient, Codable {
 	let region: Region
 	private(set) var session: URLSession = .init(configuration: .ephemeral)
 	
-	fileprivate var accessToken: String?
+	fileprivate(set) var accessToken: String?
 	fileprivate var entitlementsToken: String?
 	fileprivate var clientVersion: String?
 	
