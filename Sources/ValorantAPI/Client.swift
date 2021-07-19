@@ -13,12 +13,12 @@ public final class ValorantClient: Identifiable, Codable {
 	/// Attempts to authenticate with the given credentials and, as a result, publishes a client instance initialized with the necessary tokens.
 	public static func authenticated(
 		username: String, password: String,
-		region: Region,
+		location: Location,
 		sessionOverride: URLSession? = nil
 	) async throws -> ValorantClient {
 		let client = try await Client.authenticated(
 			username: username, password: password,
-			region: region,
+			location: location,
 			sessionOverride: sessionOverride
 		)
 		return try Self(client: client)
@@ -35,7 +35,7 @@ public final class ValorantClient: Identifiable, Codable {
 	#endif
 	
 	public let userID: User.ID
-	public var region: Region { client.region }
+	public var location: Location { client.location }
 	
 	private let client: Client
 	
@@ -123,21 +123,21 @@ private final class Client: Identifiable, Protoclient, Codable {
 	
 	var responseDecoder: JSONDecoder { ValorantClient.responseDecoder }
 	
-	let region: Region
+	let location: Location
 	private(set) var session: URLSession = .init(configuration: .ephemeral)
 	
 	fileprivate(set) var accessToken: String?
 	fileprivate var entitlementsToken: String?
 	fileprivate var clientVersion: String?
 	
-	var baseURL: URL { BaseURLs.gameAPI(region: region) }
+	var baseURL: URL { BaseURLs.gameAPI(location: location) }
 	
 	static func authenticated(
 		username: String, password: String,
-		region: Region,
+		location: Location,
 		sessionOverride: URLSession? = nil
 	) async throws -> Client {
-		let client = Client(region: region, sessionOverride: sessionOverride)
+		let client = Client(location: location, sessionOverride: sessionOverride)
 		try await client.establishSession()
 		
 		client.accessToken = try await client.getAccessToken(username: username, password: password)
@@ -146,11 +146,11 @@ private final class Client: Identifiable, Protoclient, Codable {
 	}
 	
 	#if DEBUG
-	public static let mocked = Client(region: .europe)
+	public static let mocked = Client(location: .europe)
 	#endif
 	
-	private init(region: Region, sessionOverride: URLSession? = nil) {
-		self.region = region
+	private init(location: Location, sessionOverride: URLSession? = nil) {
+		self.location = location
 		if let sessionOverride = sessionOverride {
 			self.session = sessionOverride
 		}
@@ -211,12 +211,22 @@ private final class Client: Identifiable, Protoclient, Codable {
 	
 	#if DEBUG
 	func traceOutgoing<R>(_ rawRequest: URLRequest, for request: R) where R : Request {
-		print("sending request to", rawRequest.url!)
+		print("\(request.path): sending \(rawRequest.httpMethod!) request to", rawRequest.url!)
+		print(String(data: rawRequest.httpBody ?? Data(), encoding: .utf8)!)
+	}
+	
+	func traceIncoming<R>(_ response: Protoresponse, for request: R) where R : Request {
+		print("\(request.path): received response:")
+		if response.body.count < 1000 {
+			print((try? response.decodeString(using: .utf8)) ?? "<undecodable>")
+		} else {
+			print("<\(response.body.count) bytes>")
+		}
 	}
 	#endif
 	
 	private enum CodingKeys: CodingKey {
-		case region
+		case location
 		case accessToken
 		case entitlementsToken
 		case clientVersion
@@ -238,13 +248,12 @@ enum BaseURLs {
 	static let authAPI = auth.appendingPathComponent("api/v1")
 	static let entitlementsAPI = URL(string: "https://entitlements.auth.riotgames.com/api")!
 	
-	static func gameAPI(region: Region) -> URL {
-		URL(string: "https://pd.\(region.subdomain).a.pvp.net")!
+	static func gameAPI(location: Location) -> URL {
+		URL(string: "https://pd.\(location.shard).a.pvp.net")!
 	}
 	
-	static func liveGameAPI(region: Region) -> URL {
-		// TODO: test with other regions—just using the subdomain twice feels wrong…
-		URL(string: "https://glz-\(region.subdomain)-1.\(region.subdomain).a.pvp.net")!
+	static func liveGameAPI(location: Location) -> URL {
+		URL(string: "https://glz-\(location.region)-1.\(location.shard).a.pvp.net")!
 	}
 }
 
