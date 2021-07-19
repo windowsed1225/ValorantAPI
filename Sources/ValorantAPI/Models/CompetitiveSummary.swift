@@ -33,6 +33,10 @@ public struct CompetitiveSummary: Codable, Identifiable {
 		public var gamesNeededForRatingWithinEpisode: Int
 		public var bySeason: [Season.ID: SeasonInfo]?
 		
+		public func inSeason(_ id: Season.ID?) -> SeasonInfo? {
+			id.flatMap { bySeason?[$0] }
+		}
+		
 		public init(from decoder: Decoder) throws {
 			let container = try decoder.container(keyedBy: CodingKeys.self)
 			
