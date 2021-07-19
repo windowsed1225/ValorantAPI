@@ -2,7 +2,7 @@ import Foundation
 import Protoquest
 
 extension ValorantClient {
-	public func getCompetitiveSummary(userID: User.ID) async throws -> CompetitiveSummary {
+	public func getCareerSummary(userID: User.ID) async throws -> CareerSummary {
 		try await send(CompetitiveSummaryRequest(userID: userID))
 	}
 }
@@ -14,5 +14,5 @@ private struct CompetitiveSummaryRequest: GetJSONRequest {
 		"/mmr/v1/players/\(userID)"
 	}
 	
-	typealias Response = CompetitiveSummary
+	typealias Response = CareerSummary
 }

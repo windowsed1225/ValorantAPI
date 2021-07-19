@@ -9,7 +9,7 @@ final class DecodingTests: XCTestCase {
 	}
 	
 	func testDecodingCompSummary() throws {
-		let summary = try decode(CompetitiveSummary.self, fromJSONNamed: "comp_summary")
+		let summary = try decode(CareerSummary.self, fromJSONNamed: "career_summary")
 		dump(summary)
 		//XCTAssertEqual(matches.count, 20)
 	}

@@ -1,10 +1,10 @@
 import Foundation
 
-public struct CompetitiveSummary: Codable, Identifiable {
+public struct CareerSummary: Codable, Identifiable {
 	public var userID: User.ID
-	public var newPlayerExperienceFinished: Bool
+	public var hasFinishedNewPlayerExperience: Bool
 	@_StringKeyedDictionary
-	public var skillsByQueue: [QueueID: QueueInfo]
+	public var infoByQueue: [QueueID: QueueInfo]
 	/// - Note: This may not be what you expect—it's not limited to competitive matches.
 	public var latestUpdate: CompetitiveUpdate?
 	public var isAnonymizedOnLeaderboard: Bool
@@ -13,14 +13,14 @@ public struct CompetitiveSummary: Codable, Identifiable {
 	public var id: User.ID { userID }
 	
 	public var competitiveInfo: QueueInfo? {
-		get { skillsByQueue[.competitive] }
-		set { skillsByQueue[.competitive] = newValue }
+		get { infoByQueue[.competitive] }
+		set { infoByQueue[.competitive] = newValue }
 	}
 	
 	private enum CodingKeys: String, CodingKey {
 		case userID = "Subject"
-		case newPlayerExperienceFinished = "NewPlayerExperienceFinished"
-		case skillsByQueue = "QueueSkills"
+		case hasFinishedNewPlayerExperience = "NewPlayerExperienceFinished"
+		case infoByQueue = "QueueSkills"
 		case latestUpdate = "LatestCompetitiveUpdate"
 		case isAnonymizedOnLeaderboard = "IsLeaderboardAnonymized"
 		case isActRankBadgeHidden = "IsActRankBadgeHidden"
