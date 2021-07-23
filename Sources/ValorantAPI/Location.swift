@@ -13,4 +13,9 @@ public struct Location: Hashable, Codable {
 	
 	public var region: String
 	public var shard: String
+	
+	public init(region: String, shard: String) {
+		self.region = region
+		self.shard = shard
+	}
 }
