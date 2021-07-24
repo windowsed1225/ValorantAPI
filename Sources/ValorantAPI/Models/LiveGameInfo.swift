@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LiveGameInfo: Codable {
+public struct LiveGameInfo: Codable, BasicMatchInfo {
 	public var id: Match.ID
 	
 	public var players: [PlayerInfo]
@@ -11,6 +11,14 @@ public struct LiveGameInfo: Codable {
 	public var provisioningFlowID: ProvisioningFlow.ID
 	public var matchmakingData: MatchmakingData
 	public var isReconnectable: Bool
+	
+	public var queueID: QueueID? {
+		matchmakingData.queueID
+	}
+	
+	public var isRanked: Bool {
+		matchmakingData.isRanked
+	}
 	
 	private enum CodingKeys: String, CodingKey {
 		case id = "MatchID"
@@ -36,7 +44,8 @@ public struct LiveGameInfo: Codable {
 	}
 	
 	public struct MatchmakingData: Codable {
-		public var queueID: QueueID
+		@SpecialOptional(.emptyString)
+		public var queueID: QueueID?
 		public var isRanked: Bool
 		
 		private enum CodingKeys: String, CodingKey {

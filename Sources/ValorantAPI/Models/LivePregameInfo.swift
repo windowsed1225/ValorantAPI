@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LivePregameInfo: Codable, Identifiable {
+public struct LivePregameInfo: Codable, Identifiable, BasicMatchInfo {
 	public var id: Match.ID
 	
 	public var team: TeamInfo

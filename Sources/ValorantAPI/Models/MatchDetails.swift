@@ -21,16 +21,26 @@ public struct MatchDetails: Codable, Identifiable {
 	}
 }
 
-public struct MatchInfo: Codable, Identifiable {
+public protocol BasicMatchInfo {
+	var id: Match.ID { get }
+	var provisioningFlowID: ProvisioningFlow.ID { get }
+	var queueID: QueueID? { get }
+	var modeID: GameMode.ID { get }
+	var mapID: MapID { get }
+	var isRanked: Bool { get }
+}
+
+public struct MatchInfo: Codable, Identifiable, BasicMatchInfo {
 	public var id: Match.ID
 	public var mapID: MapID
 	public var gameVersion: String
 	public var gameLengthMillis: Int
 	public var gameStart: Date
-	public var provisioningFlowID: String
+	public var provisioningFlowID: ProvisioningFlow.ID
 	public var isCompleted: Bool
-	public var queueID: QueueID
-	public var gameMode: GameMode.ID
+	@SpecialOptional(.emptyString)
+	public var queueID: QueueID?
+	public var modeID: GameMode.ID
 	public var isRanked: Bool
 	public var canAdvanceContracts: Bool
 	public var seasonID: Season.ID
@@ -48,7 +58,7 @@ public struct MatchInfo: Codable, Identifiable {
 		case provisioningFlowID
 		case isCompleted
 		case queueID
-		case gameMode
+		case modeID = "gameMode"
 		case isRanked
 		case canAdvanceContracts = "canProgressContracts"
 		case seasonID = "seasonId"
