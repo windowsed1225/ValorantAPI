@@ -49,10 +49,6 @@ where RawID: LosslessStringConvertible {
 
 // MARK: - Various Marker Types for API Concepts
 
-public enum Season {
-	public typealias ID = ObjectID<Self, LowercaseUUID>
-}
-
 /// you're probably looking for `MatchDetails` or `CompetitiveUpdate`
 public enum Match {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
