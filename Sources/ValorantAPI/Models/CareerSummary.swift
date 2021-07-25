@@ -81,6 +81,14 @@ public struct CareerSummary: Codable, Identifiable {
 		public var gamesNeededForRating: Int
 		public var totalWinsNeededForRank: Int
 		
+		/// In episode 1 act 3, Riot decided to make ratings absolute (so that 50 rr @ bronze 2 would be 100 higher than 50 rr @ bronze 1).
+		/// They changed it back the very next act, but in case you want to handle that gracefully, this property should do that for you.
+		public var adjustedRankedRating: Int {
+			seasonID == .episode1Act3
+				? (rankedRating - 100 * competitiveTier)
+				: rankedRating
+		}
+		
 		public init(
 			seasonID: Season.ID,
 			winCount: Int = 0,
