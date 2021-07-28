@@ -96,11 +96,24 @@ extension Client {
 		// don't care about the rest
 	}
 	
-	private enum AccessTokenExtractionError: Error {
+	private enum AccessTokenExtractionError: Error, LocalizedError {
 		case tokenMissing
 		case notEnoughParts(Int)
 		case base64DecodingFailed(String)
 		case decodingError(DecodingError)
+		
+		var failureReason: String? {
+			switch self {
+			case .tokenMissing:
+				return "No token found."
+			case .notEnoughParts(let partCount):
+				return "Not enough JWT parts—found \(partCount)."
+			case .base64DecodingFailed(let base64String):
+				return "Could not decode Base64 string '\(base64String)'."
+			case .decodingError(let error):
+				return "Decoding failed:\n\("" <- { dump(error, to: &$0) })"
+			}
+		}
 	}
 }
 
