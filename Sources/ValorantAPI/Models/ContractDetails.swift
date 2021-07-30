@@ -16,7 +16,8 @@ public struct ContractDetails: Codable {
 	
 	public struct MissionMetadata: Codable {
 		public var hasCompletedNewPlayerExperience: Bool
-		/// Can be nil for accounts that haven't completed any weeklies this act.
+		/// The activation date for the last set of weeklies the user has completed.
+		/// - Note: Can be `nil` for users that haven't completed any weeklies this act.
 		public var weeklyCheckpoint: Date?
 		/// When the next set of weekly missions will become available.
 		public var weeklyRefillTime: Date?
