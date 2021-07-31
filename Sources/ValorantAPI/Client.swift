@@ -80,7 +80,7 @@ extension Client {
 		}
 		
 		// this initializer requires padding (to a multiple of 4) but ignores excess padding, so let's just ensure we have enough
-		let base64String = "\(tokenParts[tokenInfoIndex])==="
+		let base64String = "\(tokenParts[tokenInfoIndex])===="
 		let rawTokenInfo = try Data(base64Encoded: base64String)
 			??? AccessTokenExtractionError.base64DecodingFailed(base64String)
 		
