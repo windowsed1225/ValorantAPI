@@ -79,8 +79,13 @@ extension Client {
 			throw AccessTokenExtractionError.notEnoughParts(tokenParts.count)
 		}
 		
-		// this initializer requires padding (to a multiple of 4) but ignores excess padding, so let's just ensure we have enough
-		let base64String = "\(tokenParts[tokenInfoIndex])===="
+		// this initializer requires padding (to a multiple of 4), which JWTs don't typically have
+		let unpadded = tokenParts[tokenInfoIndex]
+		let base64String = unpadded.padding(
+			toLength: (unpadded.count + 3) / 4 * 4,
+			withPad: "=",
+			startingAt: 0
+		)
 		let rawTokenInfo = try Data(base64Encoded: base64String)
 			??? AccessTokenExtractionError.base64DecodingFailed(base64String)
 		
