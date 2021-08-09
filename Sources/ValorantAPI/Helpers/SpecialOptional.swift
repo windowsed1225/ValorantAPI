@@ -38,5 +38,17 @@ public struct EmptyStringOptionalStrategy: SpecialOptionalStrategy {
 }
 
 extension SpecialOptionalStrategy where Self == EmptyStringOptionalStrategy {
-	static var emptyString: Self { .init() }
+	public static var emptyString: Self { .init() }
+}
+
+public struct DistantPastOptionalStrategy: SpecialOptionalStrategy {
+	private static let validityCutoff = Date(timeIntervalSince1970: 0)
+	
+	public static func isNil(_ value: Date) -> Bool {
+		value < validityCutoff
+	}
+}
+
+extension SpecialOptionalStrategy where Self == DistantPastOptionalStrategy {
+	public static var distantPast: Self { .init() }
 }
