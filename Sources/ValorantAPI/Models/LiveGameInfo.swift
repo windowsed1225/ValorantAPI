@@ -9,15 +9,15 @@ public struct LiveGameInfo: Codable, BasicMatchInfo {
 	public var mapID: MapID
 	public var modeID: GameMode.ID
 	public var provisioningFlowID: ProvisioningFlow.ID
-	public var matchmakingData: MatchmakingData
+	public var matchmakingData: MatchmakingData?
 	public var isReconnectable: Bool
 	
 	public var queueID: QueueID? {
-		matchmakingData.queueID
+		matchmakingData?.queueID
 	}
 	
 	public var isRanked: Bool {
-		matchmakingData.isRanked
+		matchmakingData?.isRanked ?? false
 	}
 	
 	private enum CodingKeys: String, CodingKey {
