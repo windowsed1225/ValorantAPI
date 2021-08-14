@@ -100,7 +100,7 @@ public struct RoundResult: Codable {
 	public var defusal: BombAction?
 	
 	public struct BombAction: Codable {
-		public var timeMillis: Int
+		public var roundTimeMillis: Int
 		public var position: Position
 		public var playerLocations: [PlayerLocation]
 		public var actor: Player.ID
@@ -292,7 +292,7 @@ private struct APIRoundResult: Decodable {
 			plantSite: plantSite.isEmpty ? nil : plantSite,
 			plant: try planter.map {
 				try .init(
-					timeMillis: plantTimeMillis,
+					roundTimeMillis: plantTimeMillis,
 					position: plantLocation,
 					playerLocations: plantPlayerLocations ??? DecodingError.dataCorruptedError(
 						in: container,
@@ -303,7 +303,7 @@ private struct APIRoundResult: Decodable {
 			},
 			defusal: try defuser.map {
 				try .init(
-					timeMillis: defuseTimeMillis,
+					roundTimeMillis: defuseTimeMillis,
 					position: defuseLocation,
 					playerLocations: defusePlayerLocations ??? DecodingError.dataCorruptedError(
 						in: container,
