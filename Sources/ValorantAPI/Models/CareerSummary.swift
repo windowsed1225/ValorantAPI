@@ -1,9 +1,10 @@
 import Foundation
+import ErgonomicCodable
 
 public struct CareerSummary: Codable, Identifiable {
 	public var userID: User.ID
 	public var hasFinishedNewPlayerExperience: Bool
-	@_StringKeyedDictionary
+	@StringKeyedDictionary
 	public var infoByQueue: [QueueID: QueueInfo]
 	/// - Note: This may not be what you expect—it's not limited to competitive matches.
 	public var latestUpdate: CompetitiveUpdate?
@@ -47,7 +48,7 @@ public struct CareerSummary: Codable, Identifiable {
 			// ugh
 			if decoder.isDecodingFromRiot {
 				bySeason = try container.decodeIfPresent(
-					_StringKeyedDictionary<Season.ID, SeasonInfo>.self,
+					StringKeyedDictionary<Season.ID, SeasonInfo>.self,
 					forKey: .bySeason
 				)?.wrappedValue
 			} else {

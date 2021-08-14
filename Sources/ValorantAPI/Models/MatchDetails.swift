@@ -1,5 +1,6 @@
 import Foundation
 import HandyOperators
+import ErgonomicCodable
 
 public struct MatchDetails: Codable, Identifiable {
 	public var matchInfo: MatchInfo

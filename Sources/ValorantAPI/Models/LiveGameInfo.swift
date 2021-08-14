@@ -1,4 +1,5 @@
 import Foundation
+import ErgonomicCodable
 
 public struct LiveGameInfo: Codable, BasicMatchInfo {
 	public var id: Match.ID

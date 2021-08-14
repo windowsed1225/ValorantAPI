@@ -1,4 +1,5 @@
 import Foundation
+import ErgonomicCodable
 
 public struct ContractDetails: Codable {
 	public var contracts: [Contract]
@@ -47,7 +48,7 @@ public struct Contract: Codable, Identifiable {
 	
 	public struct Progression: Codable {
 		public var totalEarned: Int
-		@_StringKeyedDictionary
+		@StringKeyedDictionary
 		public var highestRewardedLevel: [LowercaseUUID: Int]
 		
 		private enum CodingKeys: String, CodingKey {
@@ -61,7 +62,7 @@ public struct Mission: Codable, Identifiable {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 	public var id: ID
 	
-	@_StringKeyedDictionary
+	@StringKeyedDictionary
 	public var objectiveProgress: [Objective.ID: Int]
 	public var isComplete: Bool
 	public var expirationTime: Date
