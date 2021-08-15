@@ -66,10 +66,6 @@ public enum PlayerTitle {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 }
 
-public enum Weapon {
-	public typealias ID = ObjectID<Self, LowercaseUUID>
-}
-
 public enum Armor {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 }
