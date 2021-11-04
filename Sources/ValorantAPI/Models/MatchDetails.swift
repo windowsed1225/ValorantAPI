@@ -43,7 +43,6 @@ public struct MatchInfo: Codable, Identifiable, BasicMatchInfo {
 	public var queueID: QueueID?
 	public var modeID: GameMode.ID
 	public var isRanked: Bool
-	public var canAdvanceContracts: Bool
 	public var seasonID: Season.ID
 	
 	public var gameLength: TimeInterval {
@@ -61,7 +60,6 @@ public struct MatchInfo: Codable, Identifiable, BasicMatchInfo {
 		case queueID
 		case modeID = "gameMode"
 		case isRanked
-		case canAdvanceContracts = "canProgressContracts"
 		case seasonID = "seasonId"
 	}
 }
