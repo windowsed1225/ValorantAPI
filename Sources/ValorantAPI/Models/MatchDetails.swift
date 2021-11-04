@@ -159,8 +159,9 @@ public struct RoundResult: Codable {
 	
 	// This actually handles the timer expired case, unlike the outcome code.
 	public struct Outcome: SimpleRawWrapper {
-		public static let eliminatied = Self("Eliminated")
+		public static let eliminated = Self("Eliminated")
 		public static let timerExpired = Self("Round timer expired")
+		public static let bombDetonated = Self("Bomb detonated")
 		public static let bombDefused = Self("Bomb defused")
 		public static let surrendered = Self("Surrendered")
 		
@@ -186,7 +187,7 @@ public struct PlayerLocation: Codable {
 }
 
 public struct Position: Codable, Hashable {
-	public var x, y: Int
+	public var x, y: Double
 }
 
 public struct Kill: Codable {
@@ -230,6 +231,10 @@ public struct Kill: Codable {
 		public struct DamageType: SimpleRawWrapper {
 			public static let bomb = Self("Bomb")
 			public static let weapon = Self("Weapon")
+			public static let melee = Self("Melee")
+			public static let ability = Self("Ability")
+			public static let fall = Self("Fall")
+			// golden gun?
 			
 			public var rawValue: String
 			

@@ -2,13 +2,15 @@ import Foundation
 import HandyOperators
 
 public struct MapID: SimpleRawWrapper {
-	public static let knownMaps: [Self] = [
+	public static let knownMaps = knownStandardMaps + [.range]
+	public static let knownStandardMaps: [Self] = [
 		.split,
 		.haven,
 		.bind,
 		.ascent,
 		.icebox,
 		.breeze,
+		.fracture,
 		.range,
 	]
 	
@@ -18,6 +20,7 @@ public struct MapID: SimpleRawWrapper {
 	public static let ascent = mapID("Ascent")
 	public static let icebox = mapID("Port")
 	public static let breeze = mapID("Foxtrot")
+	public static let fracture = mapID("Canyon")
 	public static let range = mapID("Range", group: "Poveglia")
 	
 	private static func mapID(_ key: String, group: String? = nil) -> Self {
