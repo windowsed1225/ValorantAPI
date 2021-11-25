@@ -3,7 +3,7 @@ import ErgonomicCodable
 
 public struct ContractDetails: Codable {
 	public var contracts: [Contract]
-	public var activeSpecialContract: Contract.ID
+	public var activeSpecialContract: Contract.ID?
 	public var missions: [Mission]
 	public var missionMetadata: MissionMetadata
 	// Technically this object also lists processed matches, but I don't care about those right now and they'd be a significant extra effort to add.
@@ -65,7 +65,7 @@ public struct Mission: Codable, Identifiable {
 	@StringKeyedDictionary
 	public var objectiveProgress: [Objective.ID: Int]
 	public var isComplete: Bool
-	public var expirationTime: Date
+	public var expirationTime: Date?
 	
 	private enum CodingKeys: String, CodingKey {
 		case id = "ID"
