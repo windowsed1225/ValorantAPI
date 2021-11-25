@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "ErgonomicCodable",
+        "repositoryURL": "https://github.com/juliand665/ErgonomicCodable",
+        "state": {
+          "branch": "main",
+          "revision": "d377cb1bffdd928ae957cc693641edef6d627c41",
+          "version": null
+        }
+      },
+      {
         "package": "HandyOperators",
         "repositoryURL": "https://github.com/juliand665/HandyOperators",
         "state": {
