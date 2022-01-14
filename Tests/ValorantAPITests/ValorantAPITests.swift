@@ -126,7 +126,7 @@ final class ValorantAPITests: XCTestCase {
 		try await testCommunication {
 			try await ValorantClient.authenticated(
 				username: "username", password: "password",
-				region: .europe,
+				location: .europe,
 				sessionOverride: verifyingURLSession
 			)
 		} expecting: {
