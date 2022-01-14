@@ -6,6 +6,10 @@ extension ValorantClient {
 	public func getContractDetails() async throws -> ContractDetails {
 		try await send(ContractDetailsRequest(playerID: userID))
 	}
+	
+	public func activateContract(_ id: Contract.ID) async throws {
+		try await send(ActivateContractRequest(playerID: userID, contractID: id))
+	}
 }
 
 private struct ContractDetailsRequest: GetJSONRequest {
@@ -16,4 +20,15 @@ private struct ContractDetailsRequest: GetJSONRequest {
 	}
 	
 	typealias Response = ContractDetails
+}
+
+private struct ActivateContractRequest: GetRequest, StatusCodeRequest {
+	var httpMethod: String { "POST" }
+	
+	var playerID: Player.ID
+	var contractID: Contract.ID
+	
+	var path: String {
+		"/contracts/v1/contracts/\(playerID)/special/\(contractID)"
+	}
 }

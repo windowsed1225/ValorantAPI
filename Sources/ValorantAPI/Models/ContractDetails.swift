@@ -39,6 +39,15 @@ public struct Contract: Codable, Identifiable {
 	public var levelReached: Int
 	public var progressionTowardsNextLevel: Int
 	
+	public static func unprogressed(with id: ID) -> Self {
+		.init(
+			id: id,
+			progression: .init(totalEarned: 0, highestRewardedLevel: [:]),
+			levelReached: 0,
+			progressionTowardsNextLevel: 0
+		)
+	}
+	
 	private enum CodingKeys: String, CodingKey {
 		case id = "ContractDefinitionID"
 		case progression = "ContractProgression"
