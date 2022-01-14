@@ -1,6 +1,6 @@
 import Foundation
 
-typealias SimpleRawWrapper = _RawWrapper & Hashable & Codable
+public typealias SimpleRawWrapper = _RawWrapper & Hashable & Codable
 
 public protocol _RawWrapper: RawRepresentable {
 	init(_ rawValue: RawValue)
