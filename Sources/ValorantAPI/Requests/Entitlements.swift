@@ -1,7 +1,7 @@
 import Foundation
 import Protoquest
 
-extension Protoclient {
+extension AuthClient {
 	func getEntitlementsToken() async throws -> String {
 		try await send(EntitlementsTokenRequest()).entitlementsToken
 	}
