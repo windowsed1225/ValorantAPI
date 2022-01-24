@@ -38,6 +38,49 @@ final class ValorantAPITests: XCTestCase {
 		}
 	}
 	
+	func testMultifactor() async throws {
+		try await testCommunication {
+			_ = try await APISession(
+				username: "username", password: "password",
+				sessionOverride: verifyingURLSession <- {
+					$0.configuration.httpCookieStorage!.setCookie(.init(properties: [
+						.name: "ssid",
+						.value: "SESSION_ID",
+						.domain: "auth.riotgames.com",
+						.path: "/",
+					])!)
+				},
+				multifactorHandler: { info in
+					XCTAssertEqual(info, .init(version: "v2", codeLength: 6, method: "email", methods: ["email"], email: "jul**@****.com"))
+					return "123456"
+				}
+			)
+		} expecting: {
+			ExpectedRequest(to: "https://auth.riotgames.com/api/v1/authorization")
+				.post()
+				.responseBody(#"{ "type": "auth", "country": "che" }"#)
+			
+			// credentials accepted; must provide 2FA code
+			ExpectedRequest(to: "https://auth.riotgames.com/api/v1/authorization")
+				.put()
+				.responseBody(fileNamed: "responses/multifactor")
+			
+			// retry
+			ExpectedRequest(to: "https://auth.riotgames.com/api/v1/authorization")
+				.put()
+				.responseBody(fileNamed: "responses/multifactor")
+			
+			// correct now
+			ExpectedRequest(to: "https://auth.riotgames.com/api/v1/authorization")
+				.put()
+				.responseBody(fileNamed: "responses/access_token")
+			
+			ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
+				.post()
+				.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
+		}
+	}
+	
 	func testLiveNoGame() async throws {
 		let client = try mockClient()
 		

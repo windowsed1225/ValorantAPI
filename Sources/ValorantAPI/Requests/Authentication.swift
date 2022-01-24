@@ -130,7 +130,7 @@ private struct AuthResponse: Decodable {
 }
 
 public typealias MultifactorHandler = (MultifactorInfo) async throws -> String
-public struct MultifactorInfo: Decodable {
+public struct MultifactorInfo: Decodable, Hashable {
 	public var version: String
 	public var codeLength: Int
 	/// the method the server has chosen (currently always expected to be email)
