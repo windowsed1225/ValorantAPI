@@ -8,39 +8,56 @@ extension AuthClient {
 		assert(response.type == .auth && response.error == nil)
 	}
 	
-	func getAccessToken(username: String, password: String) async throws -> AccessToken {
-		let response = try await send(AccessTokenRequest(username: username, password: password))
-		
-		guard response.type != .auth else {
+	func getAccessToken(
+		username: String, password: String,
+		multifactorHandler: MultifactorHandler
+	) async throws -> AccessToken {
+		let response = try await send(CredentialsAuthRequest(
+			username: username, password: password
+		))
+		return try await handleAuthResponse(response, multifactorHandler: multifactorHandler)
+	}
+	
+	private func handleAuthResponse(
+		_ response: AuthResponse,
+		multifactorHandler: MultifactorHandler
+	) async throws -> AccessToken {
+		switch response.type {
+		case .auth:
 			throw AuthenticationError(message: response.error ?? "<no message given>")
+		case .error:
+			throw AuthHandlingError.unexpectedError(response.error)
+		case .multifactor:
+			assert(response.error == nil)
+			guard let info = response.multifactor
+			else { throw AuthHandlingError.missingResponseBody }
+			let code = try await multifactorHandler(info)
+			let newResponse = try await send(MultifactorAuthRequest(
+				code: code, rememberDevice: true
+			))
+			return try await handleAuthResponse(newResponse, multifactorHandler: multifactorHandler)
+		case .response:
+			assert(response.error == nil)
+			guard let body = response.response
+			else { throw AuthHandlingError.missingResponseBody }
+			return body.extractAccessToken()
 		}
-		assert(response.type == .response && response.error == nil)
-		
-		return response.response!.extractAccessToken()
 	}
 	
 	func refreshAccessToken() async throws -> AccessToken {
-		let response = try await send(ReauthenticationRequest())
+		let response = try await send(ReauthRequest())
 		print("response:", response)
 		let url = try URL(string: response.components(separatedBy: " ").last!)
-		??? ReauthenticationError.noURLReceived
+		??? AuthHandlingError.missingResponseBody
 		return try url.extractAccessToken()
-		??? ReauthenticationError.invalidURLReceived
+		??? AuthHandlingError.invalidTokenURL(url)
 	}
 }
 
-enum ReauthenticationError: Error, LocalizedError {
-	case noURLReceived
-	case invalidURLReceived
-	
-	var errorDescription: String? {
-		switch self {
-		case .noURLReceived:
-			return "reauth failed: no url received!"
-		case .invalidURLReceived:
-			return "reauth failed: invalid url received"
-		}
-	}
+enum AuthHandlingError: Error {
+	case missingResponseBody
+	case invalidTokenURL(URL)
+	case unexpectedError(String?)
 }
 
 public struct AuthenticationError: LocalizedError {
@@ -56,7 +73,7 @@ public struct AuthenticationError: LocalizedError {
 }
 
 private struct CookiesRequest: JSONJSONRequest, Encodable {
-	typealias Response = AuthenticationResponse
+	typealias Response = AuthResponse
 	
 	var baseURLOverride: URL? { BaseURLs.authAPI }
 	var path: String { "authorization" }
@@ -68,22 +85,34 @@ private struct CookiesRequest: JSONJSONRequest, Encodable {
 	let scope = "account openid"
 }
 
-private struct AccessTokenRequest: JSONJSONRequest, Encodable {
-	typealias Response = AuthenticationResponse
-	
+private protocol AuthRequest: JSONJSONRequest, Encodable
+where Response == AuthResponse {
+	var type: AuthMessageType { get }
+}
+
+extension AuthRequest {
 	var httpMethod: String { "PUT" }
 	var baseURLOverride: URL? { BaseURLs.authAPI }
 	var path: String { "authorization" }
-	
-	let type = AuthMessageType.auth
-	var username, password: String
 }
 
-private struct AuthenticationResponse: Decodable {
+private struct CredentialsAuthRequest: AuthRequest {
+	let type = AuthMessageType.auth
+	let username, password: String
+}
+
+private struct MultifactorAuthRequest: AuthRequest {
+	let type = AuthMessageType.multifactor
+	let code: String
+	let rememberDevice: Bool
+}
+
+private struct AuthResponse: Decodable {
 	var type: AuthMessageType
 	
 	var error: String?
 	var response: AccessTokenInfo?
+	var multifactor: MultifactorInfo?
 	
 	struct AccessTokenInfo: Decodable {
 		var mode: String // fragment
@@ -100,7 +129,36 @@ private struct AuthenticationResponse: Decodable {
 	}
 }
 
-private struct ReauthenticationRequest: GetStringRequest {
+public typealias MultifactorHandler = (MultifactorInfo) async throws -> String
+public struct MultifactorInfo: Decodable {
+	public var version: String
+	public var codeLength: Int
+	/// the method the server has chosen (currently always expected to be email)
+	public var method: String
+	/// other methods that are available (no way to select them currently)
+	public var methods: [String]
+	/// the email the code was sent to; mostly blanked-out
+	public var email: String
+	
+	public static func mocked(codeLength: Int, email: String) -> Self {
+		.init(
+			version: "v2",
+			codeLength: codeLength,
+			method: "email",
+			methods: ["email"],
+			email: email
+		)
+	}
+	
+	private enum CodingKeys: String, CodingKey {
+		case version = "mfaVersion"
+		case codeLength = "multiFactorCodeLength"
+		case method, methods
+		case email
+	}
+}
+
+private struct ReauthRequest: GetStringRequest {
 	var baseURLOverride: URL? { BaseURLs.auth }
 	var path: String { "authorize" }
 	
@@ -147,4 +205,5 @@ private enum AuthMessageType: String, Hashable, Codable {
 	case auth
 	case response
 	case error
+	case multifactor
 }
