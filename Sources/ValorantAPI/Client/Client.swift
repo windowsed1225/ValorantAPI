@@ -10,18 +10,6 @@ public final class ValorantClient: Identifiable {
 		$0.userInfo[.isDecodingFromRiot] = true
 	}
 	
-	/// Attempts to authenticate with the given credentials and, as a result, publishes a client instance initialized with the necessary tokens.
-	public static func authenticated(
-		username: String, password: String,
-		location: Location,
-		sessionOverride: URLSession? = nil
-	) async throws -> ValorantClient {
-		let session = try await APISession(username: username, password: password)
-		let userID = try session.accessToken.extractUserID()
-		let client = Client(location: location, apiSession: session)
-		return Self(client: client, userID: userID)
-	}
-	
 	#if DEBUG
 	/// A mocked client that's not actually signed in, for testing.
 	public static let mocked = ValorantClient(
@@ -40,6 +28,12 @@ public final class ValorantClient: Identifiable {
 	public var location: Location { client.location }
 	
 	private let client: Client
+	
+	public convenience init(location: Location, session: APISession, urlSessionOverride: URLSession? = nil) throws {
+		let userID = try session.accessToken.extractUserID()
+		let client = Client(location: location, apiSession: session, sessionOverride: urlSessionOverride)
+		self.init(client: client, userID: userID)
+	}
 	
 	private init(client: Client, userID: User.ID) {
 		self.client = client

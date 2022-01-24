@@ -1,7 +1,7 @@
 import Foundation
 import HandyOperators
 
-struct APISession: Codable, Equatable {
+public struct APISession: Codable, Equatable {
 	var accessToken: AccessToken
 	var entitlementsToken: String
 	var sessionID: String
@@ -22,12 +22,14 @@ struct AccessToken: Codable, Hashable {
 }
 
 extension APISession {
-	init(username: String, password: String) async throws {
+	public init(username: String, password: String, multifactorHandler: MultifactorHandler) async throws {
 		let client = AuthClient()
 		try await client.establishSession()
 		
-		self.accessToken = try await client
-			.getAccessToken(username: username, password: password)
+		self.accessToken = try await client.getAccessToken(
+			username: username, password: password,
+			multifactorHandler: multifactorHandler
+		)
 		await client.setAccessToken(accessToken)
 		
 		self.entitlementsToken = try await client
