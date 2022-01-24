@@ -4,11 +4,7 @@ import HandyOperators
 
 final actor AuthClient: Protoclient {
 	let baseURL = BaseURLs.authAPI
-	let session = URLSession(
-		configuration: .ephemeral,
-		delegate: NoRedirectsDelegate.shared,
-		delegateQueue: nil
-	)
+	let session: URLSession
 	var accessToken: AccessToken?
 	
 	var sessionID: String? {
@@ -16,7 +12,12 @@ final actor AuthClient: Protoclient {
 			.first { $0.name == "ssid" }?.value
 	}
 	
-	init(sessionID: String? = nil) {
+	init(sessionID: String? = nil, sessionOverride: URLSession? = nil) {
+		self.session = sessionOverride ?? .init(
+			configuration: .ephemeral,
+			delegate: NoRedirectsDelegate.shared,
+			delegateQueue: nil
+		)
 		let cookies = session.configuration.httpCookieStorage!
 		if let sessionID = sessionID {
 			cookies.setCookie(.init(properties: [

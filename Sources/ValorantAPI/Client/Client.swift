@@ -35,6 +35,21 @@ public final class ValorantClient: Identifiable {
 		self.init(client: client, userID: userID)
 	}
 	
+	#if DEBUG
+	// for testing
+	convenience init(location: Location, session: APISession, userID: User.ID, urlSessionOverride: URLSession) {
+		self.init(
+			client: .init(
+				location: location,
+				apiSession: session,
+				version: nil,
+				sessionOverride: urlSessionOverride
+			),
+			userID: userID
+		)
+	}
+	#endif
+	
 	private init(client: Client, userID: User.ID) {
 		self.client = client
 		self.userID = userID

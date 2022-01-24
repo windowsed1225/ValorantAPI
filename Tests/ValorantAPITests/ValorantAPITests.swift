@@ -1,5 +1,6 @@
 import XCTest
 import Protoquest
+import HandyOperators
 @testable import ValorantAPI
 
 final class ValorantAPITests: XCTestCase {
@@ -9,11 +10,36 @@ final class ValorantAPITests: XCTestCase {
 	static let reynaID = Agent.ID("a3bfb853-43b2-7238-a4f1-ad90e9e46bcc")!
 	
 	func testAuthentication() async throws {
-		_ = try await authenticate()
+		try await testCommunication {
+			_ = try await APISession(
+				username: "username", password: "password",
+				sessionOverride: verifyingURLSession <- {
+					$0.configuration.httpCookieStorage!.setCookie(.init(properties: [
+						.name: "ssid",
+						.value: "SESSION_ID",
+						.domain: "auth.riotgames.com",
+						.path: "/",
+					])!)
+				},
+				multifactorHandler: { _ in fatalError() }
+			)
+		} expecting: {
+			ExpectedRequest(to: "https://auth.riotgames.com/api/v1/authorization")
+				.post()
+				.responseBody(#"{ "type": "auth", "country": "che" }"#)
+			
+			ExpectedRequest(to: "https://auth.riotgames.com/api/v1/authorization")
+				.put()
+				.responseBody(fileNamed: "responses/access_token")
+			
+			ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
+				.post()
+				.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
+		}
 	}
 	
 	func testLiveNoGame() async throws {
-		let client = try await authenticate()
+		let client = try mockClient()
 		
 		try await testCommunication {
 			let matchID = try await client.getLiveMatch(inPregame: true)
@@ -26,7 +52,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testLivePregame() async throws {
-		let client = try await authenticate()
+		let client = try mockClient()
 		
 		let matchID = try await testCommunication {
 			try await client.getLiveMatch(inPregame: true)!
@@ -48,7 +74,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testLiveGame() async throws {
-		let client = try await authenticate()
+		let client = try mockClient()
 		
 		let matchID = try await testCommunication {
 			try await client.getLiveMatch(inPregame: false)!
@@ -70,7 +96,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testPicking() async throws {
-		let client = try await authenticate()
+		let client = try mockClient()
 		
 		try await testCommunication {
 			let updatedInfo = try await client.selectAgent(Self.sovaID, in: Self.liveMatchID)
@@ -96,7 +122,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testInventory() async throws {
-		let client = try await authenticate()
+		let client = try mockClient()
 		
 		try await testCommunication {
 			let inventory = try await client.getInventory(for: Self.playerID)
@@ -108,7 +134,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testGetUsers() async throws {
-		let client = try await authenticate()
+		let client = try mockClient()
 		
 		try await testCommunication {
 			let users = try await client.getUsers(for: [Self.playerID])
@@ -122,25 +148,16 @@ final class ValorantAPITests: XCTestCase {
 		}
 	}
 	
-	func authenticate() async throws -> ValorantClient {
-		try await testCommunication {
-			try await ValorantClient.authenticated(
-				username: "username", password: "password",
-				location: .europe,
-				sessionOverride: verifyingURLSession
-			)
-		} expecting: {
-			ExpectedRequest(to: "https://auth.riotgames.com/api/v1/authorization")
-				.post()
-				.responseBody(#"{ "type": "auth", "country": "che" }"#)
-			
-			ExpectedRequest(to: "https://auth.riotgames.com/api/v1/authorization")
-				.put()
-				.responseBody(fileNamed: "responses/access_token")
-			
-			ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
-				.post()
-				.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
-		}
+	func mockClient() throws -> ValorantClient {
+		.init(
+			location: .europe,
+			session: .init(
+				accessToken: .init(type: "Bearer", token: "ACCESS_TOKEN", expiration: .distantFuture),
+				entitlementsToken: "ENTITLEMENTS_TOKEN",
+				sessionID: "SESSION_ID"
+			),
+			userID: Self.playerID,
+			urlSessionOverride: verifyingURLSession
+		)
 	}
 }

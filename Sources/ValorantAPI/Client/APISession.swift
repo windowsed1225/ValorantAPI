@@ -22,8 +22,12 @@ struct AccessToken: Codable, Hashable {
 }
 
 extension APISession {
-	public init(username: String, password: String, multifactorHandler: MultifactorHandler) async throws {
-		let client = AuthClient()
+	public init(
+		username: String, password: String,
+		sessionOverride: URLSession? = nil,
+		multifactorHandler: MultifactorHandler
+	) async throws {
+		let client = AuthClient(sessionOverride: sessionOverride)
 		try await client.establishSession()
 		
 		self.accessToken = try await client.getAccessToken(
