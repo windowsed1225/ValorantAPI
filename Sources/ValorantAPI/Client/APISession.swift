@@ -46,10 +46,15 @@ extension APISession {
 	mutating func refreshAccessToken() async throws {
 		let client = AuthClient(sessionID: sessionID)
 		self.accessToken = try await client.refreshAccessToken()
+		??? RefreshError.sessionExpired
 	}
 	
 	enum EstablishmentError: Error {
 		case noSessionIDCookie
+	}
+	
+	enum RefreshError: Error {
+		case sessionExpired
 	}
 }
 

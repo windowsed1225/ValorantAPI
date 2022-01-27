@@ -191,7 +191,11 @@ private final actor Client: Identifiable, Protoclient {
 			waitingForSession.forEach { $0.resume() }
 		} catch {
 			waitingForSession.forEach { $0.resume(throwing: error) }
-			throw APIError.sessionResumptionFailure(error)
+			if case APISession.RefreshError.sessionExpired = error {
+				throw APIError.sessionExpired
+			} else {
+				throw APIError.sessionResumptionFailure(error)
+			}
 		}
 	}
 	

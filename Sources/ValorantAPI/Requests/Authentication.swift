@@ -44,10 +44,12 @@ extension AuthClient {
 		}
 	}
 	
-	func refreshAccessToken() async throws -> AccessToken {
+	func refreshAccessToken() async throws -> AccessToken? {
 		let response = try await send(ReauthRequest())
 		print("response:", response)
-		let url = try URL(string: response.components(separatedBy: " ").last!)
+		let lastPart = response.components(separatedBy: " ").last!
+		guard !lastPart.starts(with: "/login") else { return nil } // session expired
+		let url = try URL(string: lastPart)
 		??? AuthHandlingError.missingResponseBody
 		return try url.extractAccessToken()
 		??? AuthHandlingError.invalidTokenURL(url)

@@ -8,7 +8,9 @@ extension ValorantClient {
 		case unauthorized
 		/// This likely means your access token has expired.
 		case tokenFailure(message: String)
-		/// The token has expired and the session could not be resumed. You'll likely need to reauthenticate.
+		/// The session has expired or otherwise been invalidated. You'll need to reauthenticate.
+		case sessionExpired
+		/// The session could not be resumed, though it was not recognized as clearly being expired—it's possible Riot's API has changed and this code no longer works with it. Reauthenticating could still fix it though!
 		case sessionResumptionFailure(Error)
 		/// The service is currently down for scheduled maintenance.
 		case scheduledDowntime(message: String)
@@ -21,7 +23,7 @@ extension ValorantClient {
 		
 		public var recommendsReauthentication: Bool {
 			switch self {
-			case .unauthorized, .tokenFailure, .sessionResumptionFailure:
+			case .unauthorized, .tokenFailure, .sessionExpired, .sessionResumptionFailure:
 				return true
 			case .scheduledDowntime, .resourceNotFound, .badResponseCode, .rateLimited:
 				return false
