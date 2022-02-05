@@ -15,7 +15,7 @@ public final class ValorantClient: Identifiable {
 	public static let mocked = ValorantClient(
 		client: .init(
 			location: .europe,
-			apiSession: .init(
+			session: .init(
 				accessToken: .init(type: "", token: "", expiration: .distantFuture),
 				entitlementsToken: "", sessionID: ""
 			)
@@ -31,7 +31,7 @@ public final class ValorantClient: Identifiable {
 	
 	public convenience init(location: Location, session: APISession, urlSessionOverride: URLSession? = nil) throws {
 		let userID = try session.accessToken.extractUserID()
-		let client = Client(location: location, apiSession: session, urlSessionOverride: urlSessionOverride)
+		let client = Client(location: location, session: session, urlSessionOverride: urlSessionOverride)
 		self.init(client: client, userID: userID)
 	}
 	
@@ -41,7 +41,7 @@ public final class ValorantClient: Identifiable {
 		self.init(
 			client: .init(
 				location: location,
-				apiSession: session,
+				session: session,
 				version: nil,
 				urlSessionOverride: urlSessionOverride
 			),
@@ -69,7 +69,7 @@ extension ValorantClient {
 		self.init(
 			client: .init(
 				location: saved.location,
-				apiSession: saved.session,
+				session: saved.session,
 				version: saved.version
 			),
 			userID: saved.userID
@@ -78,7 +78,7 @@ extension ValorantClient {
 	
 	public func store() async -> SavedData {
 		.init(
-			session: await client.apiSession,
+			session: await client.session,
 			location: client.location,
 			version: await client.clientVersion,
 			userID: userID
@@ -113,7 +113,7 @@ private final actor Client: Identifiable, Protoclient {
 	let location: Location
 	let urlSession: URLSession
 	
-	private(set) var apiSession: APISession
+	private(set) var session: APISession
 	private(set) var clientVersion: String?
 	
 	let baseURL: URL
@@ -124,12 +124,12 @@ private final actor Client: Identifiable, Protoclient {
 	
 	init(
 		location: Location,
-		apiSession: APISession,
+		session: APISession,
 		version: String? = nil,
 		urlSessionOverride: URLSession? = nil
 	) {
 		self.location = location
-		self.apiSession = apiSession
+		self.session = session
 		self.clientVersion = version
 		self.baseURL = BaseURLs.gameAPI(location: location)
 		self.urlSession = urlSessionOverride ?? .init(configuration: .ephemeral)
@@ -140,7 +140,7 @@ private final actor Client: Identifiable, Protoclient {
 		.base64EncodedString()
 	
 	func addHeaders(to rawRequest: inout URLRequest) async throws {
-		if apiSession.accessToken.hasExpired {
+		if session.accessToken.hasExpired {
 			let id = UUID()
 			if isResumingSession {
 				print(id, "waiting for resumption…")
@@ -155,14 +155,14 @@ private final actor Client: Identifiable, Protoclient {
 			}
 		}
 		
-		rawRequest.headers.authorization = apiSession.accessToken.encoded
-		rawRequest.headers.entitlementsToken = apiSession.entitlementsToken
+		rawRequest.headers.authorization = session.accessToken.encoded
+		rawRequest.headers.entitlementsToken = session.entitlementsToken
 		rawRequest.headers.clientVersion = clientVersion
 		rawRequest.headers.clientPlatform = Self.encodedPlatformInfo
 	}
 	
 	func dispatch<R: Request>(_ rawRequest: URLRequest, for request: R) async throws -> Protoresponse {
-		let (data, rawResponse) = try await session.data(for: rawRequest)
+		let (data, rawResponse) = try await urlSession.data(for: rawRequest)
 		let response = wrapResponse(data: data, response: rawResponse)
 		
 		let code = response.httpMetadata!.statusCode
@@ -186,7 +186,7 @@ private final actor Client: Identifiable, Protoclient {
 		
 		do {
 			// for some reason swift forbids in-place mutation for isolated properties
-			apiSession = try await apiSession <- { try await $0.refreshAccessToken() }
+			session = try await session <- { try await $0.refreshAccessToken() }
 			
 			waitingForSession.forEach { $0.resume() }
 		} catch {

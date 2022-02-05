@@ -8,7 +8,7 @@ final actor AuthClient: Protoclient {
 	var accessToken: AccessToken?
 	
 	var sessionID: String? {
-		session.configuration.httpCookieStorage!.cookies!
+		urlSession.configuration.httpCookieStorage!.cookies!
 			.first { $0.name == "ssid" }?.value
 	}
 	
