@@ -31,7 +31,7 @@ public final class ValorantClient: Identifiable {
 	
 	public convenience init(location: Location, session: APISession, urlSessionOverride: URLSession? = nil) throws {
 		let userID = try session.accessToken.extractUserID()
-		let client = Client(location: location, apiSession: session, sessionOverride: urlSessionOverride)
+		let client = Client(location: location, apiSession: session, urlSessionOverride: urlSessionOverride)
 		self.init(client: client, userID: userID)
 	}
 	
@@ -43,7 +43,7 @@ public final class ValorantClient: Identifiable {
 				location: location,
 				apiSession: session,
 				version: nil,
-				sessionOverride: urlSessionOverride
+				urlSessionOverride: urlSessionOverride
 			),
 			userID: userID
 		)
@@ -111,7 +111,7 @@ private final actor Client: Identifiable, Protoclient {
 	let responseDecoder = ValorantClient.responseDecoder
 	
 	let location: Location
-	let session: URLSession
+	let urlSession: URLSession
 	
 	private(set) var apiSession: APISession
 	private(set) var clientVersion: String?
@@ -126,13 +126,13 @@ private final actor Client: Identifiable, Protoclient {
 		location: Location,
 		apiSession: APISession,
 		version: String? = nil,
-		sessionOverride: URLSession? = nil
+		urlSessionOverride: URLSession? = nil
 	) {
 		self.location = location
 		self.apiSession = apiSession
 		self.clientVersion = version
 		self.baseURL = BaseURLs.gameAPI(location: location)
-		self.session = sessionOverride ?? .init(configuration: .ephemeral)
+		self.urlSession = urlSessionOverride ?? .init(configuration: .ephemeral)
 	}
 	
 	private static let encodedPlatformInfo = try! JSONEncoder()
