@@ -13,7 +13,7 @@ final class ValorantAPITests: XCTestCase {
 		try await testCommunication {
 			_ = try await APISession(
 				username: "username", password: "password",
-				sessionOverride: verifyingURLSession <- {
+				urlSessionOverride: verifyingURLSession <- {
 					$0.configuration.httpCookieStorage!.setCookie(.init(properties: [
 						.name: "ssid",
 						.value: "SESSION_ID",
@@ -42,7 +42,7 @@ final class ValorantAPITests: XCTestCase {
 		try await testCommunication {
 			_ = try await APISession(
 				username: "username", password: "password",
-				sessionOverride: verifyingURLSession <- {
+				urlSessionOverride: verifyingURLSession <- {
 					$0.configuration.httpCookieStorage!.setCookie(.init(properties: [
 						.name: "ssid",
 						.value: "SESSION_ID",
