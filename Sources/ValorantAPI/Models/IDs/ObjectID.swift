@@ -54,10 +54,6 @@ public enum Match {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 }
 
-public enum Party {
-	public typealias ID = ObjectID<Self, LowercaseUUID>
-}
-
 public enum PlayerCard {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 }

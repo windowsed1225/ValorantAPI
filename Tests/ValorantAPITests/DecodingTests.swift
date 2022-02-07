@@ -44,6 +44,12 @@ final class DecodingTests: XCTestCase {
 		XCTAssertEqual(gameInfo.players.count, 10)
 	}
 	
+	func testDecodingParty() throws {
+		let party = try decode(Party.self, fromJSONNamed: "party")
+		dump(party)
+		XCTAssertNil(party.queueEntryTime)
+	}
+	
 	func testDecodingInventory() throws {
 		let rawInventory = try decode(APIInventory.self, fromJSONNamed: "inventory")
 		let inventory = Inventory(rawInventory)

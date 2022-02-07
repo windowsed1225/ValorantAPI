@@ -57,7 +57,7 @@ private struct LivePlayerInfoRequest: GetJSONRequest, LiveGameRequest {
 	var location: Location
 	
 	var path: String {
-		"/v1/players/\(playerID)"
+		"/\(inPregame ? "pregame" : "core-game")/v1/players/\(playerID)"
 	}
 	
 	struct Response: Decodable {
@@ -75,7 +75,7 @@ private struct LiveMatchInfoRequest<Response: Decodable>: GetJSONRequest, LiveGa
 	var location: Location
 	
 	var path: String {
-		"/v1/matches/\(matchID)"
+		"/\(inPregame ? "pregame" : "core-game")/v1/matches/\(matchID)"
 	}
 }
 
@@ -90,20 +90,18 @@ private struct PickAgentRequest: GetJSONRequest, LiveGameRequest {
 	var location: Location
 	
 	var path: String {
-		"/v1/matches/\(matchID)/\(shouldLock ? "lock" : "select")/\(agentID)"
+		"/pregame/v1/matches/\(matchID)/\(shouldLock ? "lock" : "select")/\(agentID)"
 	}
 	
 	typealias Response = LivePregameInfo
 }
 
-private protocol LiveGameRequest: Request {
+protocol LiveGameRequest: Request {
 	var location: Location { get }
-	var inPregame: Bool { get }
 }
 
 extension LiveGameRequest {
 	var baseURLOverride: URL? {
 		BaseURLs.liveGameAPI(location: location)
-			.appendingPathComponent(inPregame ? "pregame" : "core-game")
 	}
 }
