@@ -28,7 +28,7 @@ extension AuthClient {
 		case .error:
 			throw AuthHandlingError.unexpectedError(response.error)
 		case .multifactor:
-			assert(response.error == nil)
+			// error is "multifactor_attempt_failed" if incorrect code given
 			guard let info = response.multifactor
 			else { throw AuthHandlingError.missingResponseBody }
 			let code = try await multifactorHandler(info)
