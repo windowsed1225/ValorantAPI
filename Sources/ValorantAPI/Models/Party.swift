@@ -6,11 +6,11 @@ public struct Party: Identifiable, Codable {
 	
 	public var id: ID
 	public var members: [Member]
-	public var state: String // TODO: enum
+	public var state: State
 	public var accessibility: Accessibility
 	public var eligibleQueues: [QueueID]
-	@SpecialOptional(.distantPast)
-	public var queueEntryTime: Date?
+	/// the last time this party entered the queue (even if it's not currently in a queue—check the state for that)
+	public var queueEntryTime: Date
 	public var matchmakingData: MatchmakingData
 	// there's custom game data here too—handle that?
 	
@@ -24,18 +24,35 @@ public struct Party: Identifiable, Codable {
 		case matchmakingData = "MatchmakingData"
 	}
 	
+	public struct State: SimpleRawWrapper {
+		public static let `default` = Self("DEFAULT")
+		public static let inMatchmaking = Self("MATCHMAKING")
+		// TODO: in-game state?
+		
+		public var rawValue: String
+		
+		public init(_ rawValue: String) {
+			self.rawValue = rawValue
+		}
+	}
+	
 	public struct Member: Identifiable, Codable {
 		public var id: Player.ID
 		public var identity: Player.Identity
 		public var isReady: Bool
-		public var isOwner: Bool
+		private var _isOwner: Bool?
 		public var isModerator: Bool
+		
+		public var isOwner: Bool {
+			get { _isOwner == true }
+			set { _isOwner = newValue }
+		}
 		
 		private enum CodingKeys: String, CodingKey {
 			case id = "Subject"
 			case identity = "PlayerIdentity"
 			case isReady = "IsReady"
-			case isOwner = "IsOwner"
+			case _isOwner = "IsOwner"
 			case isModerator = "IsModerator"
 		}
 	}

@@ -5,11 +5,8 @@ extension ValorantClient {
 		do {
 			return try await send(PlayerPartyRequest(playerID: userID, location: location))
 				.currentPartyID
-		} catch APIError.badResponseCode(404, _, _) {
+		} catch APIError.badResponseCode(404, _, _), APIError.resourceNotFound {
 			return nil
-		} catch {
-			print(error)
-			throw error
 		}
 	}
 	
@@ -22,25 +19,25 @@ extension ValorantClient {
 		return try await getPartyInfo(for: id)
 	}
 	
-	public func setReady(to isReady: Bool, in party: Party.ID) async throws {
+	public func setReady(to isReady: Bool, in party: Party.ID) async throws -> Party {
 		try await send(SetReadyRequest(
 			partyID: party, playerID: userID, location: location,
 			isReady: isReady
 		))
 	}
 	
-	public func changeQueue(to queue: QueueID, in party: Party.ID) async throws {
+	public func changeQueue(to queue: QueueID, in party: Party.ID) async throws -> Party {
 		try await send(ChangeQueueRequest(
 			partyID: party, location: location,
 			queueID: queue
 		))
 	}
 	
-	public func joinMatchmaking(in party: Party.ID) async throws {
+	public func joinMatchmaking(in party: Party.ID) async throws -> Party {
 		try await send(JoinMatchmakingRequest(partyID: party, location: location))
 	}
 	
-	public func leaveMatchmaking(in party: Party.ID) async throws {
+	public func leaveMatchmaking(in party: Party.ID) async throws -> Party {
 		try await send(LeaveMatchmakingRequest(partyID: party, location: location))
 	}
 }
@@ -74,7 +71,7 @@ private struct PartyInfoRequest: GetJSONRequest, LiveGameRequest {
 	typealias Response = Party
 }
 
-private struct SetReadyRequest: JSONStatusCodeRequest, Encodable, LiveGameRequest {
+private struct SetReadyRequest: JSONJSONRequest, Encodable, LiveGameRequest {
 	var partyID: Party.ID
 	var playerID: Player.ID
 	var location: Location
@@ -88,9 +85,11 @@ private struct SetReadyRequest: JSONStatusCodeRequest, Encodable, LiveGameReques
 	private enum CodingKeys: String, CodingKey {
 		case isReady = "ready"
 	}
+	
+	typealias Response = Party
 }
 
-private struct ChangeQueueRequest: JSONStatusCodeRequest, Encodable, LiveGameRequest {
+private struct ChangeQueueRequest: JSONJSONRequest, Encodable, LiveGameRequest {
 	var partyID: Party.ID
 	var location: Location
 	
@@ -103,22 +102,28 @@ private struct ChangeQueueRequest: JSONStatusCodeRequest, Encodable, LiveGameReq
 	private enum CodingKeys: String, CodingKey {
 		case queueID
 	}
+	
+	typealias Response = Party
 }
 
-private struct JoinMatchmakingRequest: JSONStatusCodeRequest, Encodable, LiveGameRequest {
+private struct JoinMatchmakingRequest: JSONJSONRequest, Encodable, LiveGameRequest {
 	var partyID: Party.ID
 	var location: Location
 	
 	var path: String {
 		"/parties/v1/parties/\(partyID)/matchmaking/join"
 	}
+	
+	typealias Response = Party
 }
 
-private struct LeaveMatchmakingRequest: JSONStatusCodeRequest, Encodable, LiveGameRequest {
+private struct LeaveMatchmakingRequest: JSONJSONRequest, Encodable, LiveGameRequest {
 	var partyID: Party.ID
 	var location: Location
 	
 	var path: String {
 		"/parties/v1/parties/\(partyID)/matchmaking/leave"
 	}
+	
+	typealias Response = Party
 }

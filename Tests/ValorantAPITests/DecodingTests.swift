@@ -46,8 +46,9 @@ final class DecodingTests: XCTestCase {
 	
 	func testDecodingParty() throws {
 		let party = try decode(Party.self, fromJSONNamed: "party")
-		dump(party)
-		XCTAssertNil(party.queueEntryTime)
+		//dump(party)
+		XCTAssert(party.queueEntryTime < .now)
+		XCTAssert(party.state == .inMatchmaking)
 	}
 	
 	func testDecodingInventory() throws {
