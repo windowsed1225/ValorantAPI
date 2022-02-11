@@ -8,6 +8,7 @@ final class ValorantAPITests: XCTestCase {
 	static let liveMatchID = Match.ID("a6e7cba8-a4ef-4aae-b775-4eb61e43a0d1")!
 	static let sovaID = Agent.ID("320b2a48-4d9b-a075-30f1-1f93a9b638fa")!
 	static let reynaID = Agent.ID("a3bfb853-43b2-7238-a4f1-ad90e9e46bcc")!
+	static let partyID = Party.ID("57837ba2-675f-4c5f-955a-11f4ab040795")!
 	
 	func testAuthentication() async throws {
 		try await testCommunication {
@@ -82,7 +83,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testLiveNoGame() async throws {
-		let client = try mockClient()
+		let client = mockClient()
 		
 		try await testCommunication {
 			let matchID = try await client.getLiveMatch(inPregame: true)
@@ -95,7 +96,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testLivePregame() async throws {
-		let client = try mockClient()
+		let client = mockClient()
 		
 		let matchID = try await testCommunication {
 			try await client.getLiveMatch(inPregame: true)!
@@ -117,7 +118,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testLiveGame() async throws {
-		let client = try mockClient()
+		let client = mockClient()
 		
 		let matchID = try await testCommunication {
 			try await client.getLiveMatch(inPregame: false)!
@@ -139,7 +140,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testPicking() async throws {
-		let client = try mockClient()
+		let client = mockClient()
 		
 		try await testCommunication {
 			let updatedInfo = try await client.selectAgent(Self.sovaID, in: Self.liveMatchID)
@@ -165,7 +166,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testInventory() async throws {
-		let client = try mockClient()
+		let client = mockClient()
 		
 		try await testCommunication {
 			let inventory = try await client.getInventory(for: Self.playerID)
@@ -177,7 +178,7 @@ final class ValorantAPITests: XCTestCase {
 	}
 	
 	func testGetUsers() async throws {
-		let client = try mockClient()
+		let client = mockClient()
 		
 		try await testCommunication {
 			let users = try await client.getUsers(for: [Self.playerID])
@@ -191,7 +192,21 @@ final class ValorantAPITests: XCTestCase {
 		}
 	}
 	
-	func mockClient() throws -> ValorantClient {
+	func testQueueSelection() async throws {
+		let client = mockClient()
+		
+		try await testCommunication {
+			let party = try await client.changeQueue(to: .unrated, in: Self.partyID)
+			XCTAssertEqual(party.matchmakingData.queueID, .unrated)
+		} expecting: {
+			ExpectedRequest(to: "https://glz-eu-1.eu.a.pvp.net/parties/v1/parties/57837ba2-675f-4c5f-955a-11f4ab040795/queue")
+				.requestBody(#"{"queueID":"unrated"}"#)
+				.post()
+				.responseBody(fileNamed: "party")
+		}
+	}
+	
+	func mockClient() -> ValorantClient {
 		.init(
 			location: .europe,
 			session: .init(

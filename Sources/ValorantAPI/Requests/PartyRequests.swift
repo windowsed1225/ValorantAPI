@@ -100,7 +100,7 @@ private struct ChangeQueueRequest: JSONJSONRequest, Encodable, LiveGameRequest {
 	var queueID: QueueID
 	
 	private enum CodingKeys: String, CodingKey {
-		case queueID
+		case queueID = "queueID"
 	}
 	
 	typealias Response = Party

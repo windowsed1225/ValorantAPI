@@ -104,10 +104,7 @@ public struct RiotError: Decodable {
 private final actor Client: Identifiable, Protoclient {
 	typealias APIError = ValorantClient.APIError
 	
-	let requestEncoder = JSONEncoder() <- {
-		$0.keyEncodingStrategy = .convertToSnakeCase
-	}
-	
+	let requestEncoder = JSONEncoder()
 	let responseDecoder = ValorantClient.responseDecoder
 	
 	let location: Location
