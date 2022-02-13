@@ -50,7 +50,7 @@ extension AuthClient {
 		let lastPart = response.components(separatedBy: " ").last!
 		guard !lastPart.starts(with: "/login") else { return nil } // session expired
 		let url = try URL(string: lastPart)
-		??? AuthHandlingError.missingResponseBody
+		??? AuthHandlingError.missingRedirectURL(response)
 		return try url.extractAccessToken()
 		??? AuthHandlingError.invalidTokenURL(url)
 	}
@@ -60,6 +60,7 @@ enum AuthHandlingError: Error {
 	case missingResponseBody
 	case invalidTokenURL(URL)
 	case unexpectedError(String?)
+	case missingRedirectURL(String)
 }
 
 public struct AuthenticationError: LocalizedError {
