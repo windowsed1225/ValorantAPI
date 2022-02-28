@@ -3,11 +3,11 @@ import Protoquest
 
 extension ValorantClient {
 	public func getCareerSummary(userID: User.ID) async throws -> CareerSummary {
-		try await send(CompetitiveSummaryRequest(userID: userID))
+		try await send(CareerSummaryRequest(userID: userID))
 	}
 }
 
-private struct CompetitiveSummaryRequest: GetJSONRequest {
+private struct CareerSummaryRequest: GetJSONRequest {
 	var userID: Player.ID
 	
 	var path: String {

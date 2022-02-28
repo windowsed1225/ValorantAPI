@@ -43,7 +43,7 @@ private struct CompetitiveUpdatesRequest: GetJSONRequest {
 	
 	struct Response: Decodable {
 		var version: Int
-		var subject: UUID
+		var subject: Player.ID
 		var matches: [CompetitiveUpdate]
 		
 		private enum CodingKeys: String, CodingKey {

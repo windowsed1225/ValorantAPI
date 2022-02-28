@@ -114,6 +114,8 @@ private struct JoinMatchmakingRequest: JSONJSONRequest, Encodable, LiveGameReque
 		"/parties/v1/parties/\(partyID)/matchmaking/join"
 	}
 	
+	private enum CodingKeys: CodingKey {}
+	
 	typealias Response = Party
 }
 
@@ -124,6 +126,8 @@ private struct LeaveMatchmakingRequest: JSONJSONRequest, Encodable, LiveGameRequ
 	var path: String {
 		"/parties/v1/parties/\(partyID)/matchmaking/leave"
 	}
+	
+	private enum CodingKeys: CodingKey {}
 	
 	typealias Response = Party
 }

@@ -16,7 +16,7 @@ public struct Inventory: Codable {
 		
 		func collectItems<ID>(_ type: ItemCollection.ID) -> Set<ID>
 		where ID: ObjectIDProtocol, ID.RawID == LowercaseUUID {
-			Set(collections[type]!.items.map(\.id).map(ID.init(rawID:)))
+			Set(collections[type]?.items.map(\.id).map(ID.init(rawID:)) ?? [])
 		}
 		
 		agents = collectItems(.agents)
