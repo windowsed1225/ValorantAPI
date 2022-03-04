@@ -102,6 +102,7 @@ extension AuthRequest {
 private struct CredentialsAuthRequest: AuthRequest {
 	let type = AuthMessageType.auth
 	let username, password: String
+	var remember = true
 }
 
 private struct MultifactorAuthRequest: AuthRequest {
