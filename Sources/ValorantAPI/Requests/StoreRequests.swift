@@ -56,8 +56,7 @@ public struct Storefront: Codable {
 	
 	public struct SkinsPanelLayout: Codable {
 		public var singleItemOffers: [StoreOffer.ID]
-		/// time left until offers expire, in seconds
-		public var remainingDuration: Int
+		public var remainingDuration: TimeInterval
 		
 		private enum CodingKeys: String, CodingKey {
 			case singleItemOffers = "SingleItemOffers"
@@ -68,17 +67,16 @@ public struct Storefront: Codable {
 
 public struct StoreBundle: Identifiable, Codable {
 	public var id: ObjectID<Self, LowercaseUUID>
-	public var dataAssetID: LowercaseUUID
+	public var assetID: Asset.ID
 	public var currencyID: Currency.ID
-	/// time left until offer expires, in seconds
-	public var remainingDuration: Int
+	public var remainingDuration: TimeInterval
 	/// whether the bundle can only be bought
 	public var isWholesaleOnly: Bool
 	public var items: [Item]
 	
 	private enum CodingKeys: String, CodingKey {
 		case id = "ID"
-		case dataAssetID = "DataAssetID"
+		case assetID = "DataAssetID"
 		case currencyID = "CurrencyID"
 		case remainingDuration = "DurationRemainingInSeconds"
 		case isWholesaleOnly = "WholesaleOnly"
@@ -115,6 +113,10 @@ public struct StoreBundle: Identifiable, Codable {
 				case amount = "Amount"
 			}
 		}
+	}
+	
+	public enum Asset {
+		public typealias ID = ObjectID<Self, LowercaseUUID>
 	}
 }
 
