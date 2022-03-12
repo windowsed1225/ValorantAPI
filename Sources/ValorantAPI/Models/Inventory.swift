@@ -8,7 +8,7 @@ public struct Inventory: Codable {
 	public var cards: Set<PlayerCard.ID>
 	public var titles: Set<PlayerTitle.ID>
 	
-	public init(_ raw: APIInventory) {
+	init(_ raw: APIInventory) {
 		let collections = Dictionary(
 			uniqueKeysWithValues: raw.collectionsByType
 				.map { ($0.id, $0) }
@@ -34,8 +34,7 @@ private extension ItemCollection.ID {
 	static let titles = Self("de7caa6b-adf7-4588-bbd1-143831e786c6")!
 }
 
-/// The way the API describes the player inventory, which is really general and really impractical. You're probably looking for ``Inventory``.
-public struct APIInventory: Decodable {
+struct APIInventory: Decodable {
 	fileprivate var collectionsByType: [ItemCollection]
 	
 	private enum CodingKeys: String, CodingKey {

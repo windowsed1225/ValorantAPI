@@ -55,6 +55,10 @@ final class DecodingTests: XCTestCase {
 		let rawInventory = try decode(APIInventory.self, fromJSONNamed: "inventory")
 		let inventory = Inventory(rawInventory)
 		dump(inventory)
+		let encoder = JSONEncoder()
+		encoder.outputFormatting = .prettyPrinted
+		let reencoded = String(bytes: try encoder.encode(inventory), encoding: .utf8)!
+		print(reencoded)
 		XCTAssertEqual(inventory.agentsIncludingStarters.count, 15)
 	}
 	
