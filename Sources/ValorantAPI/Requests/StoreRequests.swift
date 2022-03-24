@@ -124,7 +124,6 @@ public struct StoreOffer: Identifiable, Codable {
 	public var id: ObjectID<Self, LowercaseUUID>
 	public var isDirectPurchase: Bool
 	public var startDate: Date
-	@StringKeyedDictionary
 	public var cost: [Currency.ID: Int]
 	public var rewards: [Reward]
 	

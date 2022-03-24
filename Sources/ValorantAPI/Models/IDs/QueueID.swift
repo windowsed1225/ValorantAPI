@@ -1,7 +1,7 @@
 import Foundation
 import HandyOperators
 
-public struct QueueID: SimpleRawWrapper, LosslessStringConvertible {
+public struct QueueID: SimpleRawWrapper, CodingKeyRepresentable {
 	public static let unrated = Self("unrated")
 	public static let competitive = Self("competitive")
 	public static let spikeRush = Self("spikerush")
