@@ -47,17 +47,6 @@ where RawID: LosslessStringConvertible {
 	}
 }
 
-extension ObjectID: CodingKeyRepresentable where RawID: CodingKeyRepresentable {
-	public var codingKey: CodingKey {
-		rawID.codingKey
-	}
-	
-	public init?<T>(codingKey: T) where T: CodingKey {
-		guard let rawID = RawID(codingKey: codingKey) else { return nil }
-		self.init(rawID: rawID)
-	}
-}
-
 // MARK: - Various Marker Types for API Concepts
 
 /// you're probably looking for `MatchDetails` or `CompetitiveUpdate`

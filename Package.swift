@@ -5,8 +5,8 @@ import PackageDescription
 let package = Package(
 	name: "ValorantAPI",
 	platforms: [
-		.macOS("12.3"),
-		.iOS("15.4"),
+		.macOS("12"),
+		.iOS("15"),
 	],
 	products: [
 		.library(

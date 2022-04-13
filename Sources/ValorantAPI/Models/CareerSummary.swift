@@ -4,6 +4,7 @@ import ErgonomicCodable
 public struct CareerSummary: Codable, Identifiable {
 	public var userID: User.ID
 	public var hasFinishedNewPlayerExperience: Bool
+	@StringKeyedDictionary
 	public var infoByQueue: [QueueID: QueueInfo]
 	/// - Note: This may not be what you expect—it's not limited to competitive matches.
 	public var latestUpdate: CompetitiveUpdate?

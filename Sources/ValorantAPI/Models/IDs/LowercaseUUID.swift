@@ -1,9 +1,7 @@
 import Foundation
 
-public struct LowercaseUUID: Hashable, Codable, LosslessStringConvertible, RawRepresentable, CodingKeyRepresentable {
+public struct LowercaseUUID: Hashable, Codable, LosslessStringConvertible {
 	var uuid: UUID
-	
-	public var rawValue: String { description }
 	
 	public var description: String {
 		uuid.uuidString.lowercased()
@@ -21,10 +19,6 @@ public struct LowercaseUUID: Hashable, Codable, LosslessStringConvertible, RawRe
 		assert(description.lowercased() == description)
 		guard let uuid = UUID(uuidString: description) else { return nil }
 		self.init(uuid)
-	}
-	
-	public init?(rawValue: String) {
-		self.init(rawValue)
 	}
 	
 	public init(from decoder: Decoder) throws {
