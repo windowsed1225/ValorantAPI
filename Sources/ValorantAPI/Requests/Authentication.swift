@@ -106,6 +106,8 @@ private struct CredentialsAuthRequest: AuthRequest {
 }
 
 private struct MultifactorAuthRequest: AuthRequest {
+	var encoderOverride: JSONEncoder? { .init() } // no snake case conversion for this for some reason lol
+	
 	let type = AuthMessageType.multifactor
 	let code: String
 	let rememberDevice: Bool
