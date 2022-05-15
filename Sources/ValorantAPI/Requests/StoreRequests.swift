@@ -7,6 +7,10 @@ extension ValorantClient {
 		try await send(StorefrontRequest(playerID: playerID))
 	}
 	
+	public func getStoreWallet(for playerID: Player.ID) async throws -> StoreWallet {
+		try await send(StoreWalletRequest(playerID: playerID))
+	}
+	
 	public func getStoreOffers() async throws -> [StoreOffer] {
 		try await send(StoreOffersRequest()).offers
 	}
@@ -20,6 +24,16 @@ private struct StorefrontRequest: GetJSONRequest {
 	}
 	
 	typealias Response = Storefront
+}
+
+private struct StoreWalletRequest: GetJSONRequest {
+	var playerID: Player.ID
+	
+	var path: String {
+		"/store/v1/wallet/\(playerID)"
+	}
+	
+	typealias Response = StoreWallet
 }
 
 struct StoreOffersRequest: GetJSONRequest {
@@ -148,7 +162,19 @@ public struct StoreOffer: Identifiable, Codable {
 			case quantity = "Quantity"
 		}
 	}
+}
 
+public struct StoreWallet: Codable {
+	@StringKeyedDictionary
+	public var balances: [Currency.ID: Int]
+	
+	public subscript(id: Currency.ID) -> Int {
+		balances[id] ?? 0
+	}
+	
+	private enum CodingKeys: String, CodingKey {
+		case balances = "Balances"
+	}
 }
 
 public enum Currency {
