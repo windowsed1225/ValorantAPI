@@ -11,7 +11,6 @@ public struct MapID: SimpleRawWrapper {
 		.icebox,
 		.breeze,
 		.fracture,
-		.range,
 	]
 	
 	public static let split = mapID("Bonsai")

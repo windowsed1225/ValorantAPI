@@ -2,6 +2,17 @@ import Foundation
 import HandyOperators
 
 public struct QueueID: SimpleRawWrapper, LosslessStringConvertible {
+	public static let knownQueues: [Self] = [
+		.unrated,
+		.competitive,
+		.spikeRush,
+		.deathmatch,
+		.escalation,
+		.snowballFight,
+		.replication,
+		.custom,
+	]
+	
 	public static let unrated = Self("unrated")
 	public static let competitive = Self("competitive")
 	public static let spikeRush = Self("spikerush")
