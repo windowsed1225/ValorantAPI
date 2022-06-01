@@ -5,6 +5,7 @@ public struct APISession: Codable, Equatable {
 	var accessToken: AccessToken
 	var entitlementsToken: String
 	var sessionID: String
+	var tdid: String // another session cookie; not sure what TD would be
 }
 
 struct AccessToken: Codable, Hashable {
@@ -27,7 +28,7 @@ extension APISession {
 		urlSessionOverride: URLSession? = nil,
 		multifactorHandler: MultifactorHandler
 	) async throws {
-		let client = AuthClient(urlSessionOverride: urlSessionOverride)
+		let client = await AuthClient(urlSessionOverride: urlSessionOverride)
 		try await client.establishSession()
 		
 		self.accessToken = try await client.getAccessToken(
@@ -41,16 +42,20 @@ extension APISession {
 		
 		self.sessionID = try await client.sessionID
 		??? EstablishmentError.noSessionIDCookie
+		
+		self.tdid = try await client.tdid
+		??? EstablishmentError.noTDIDCookie
 	}
 	
 	mutating func refreshAccessToken() async throws {
-		let client = AuthClient(sessionID: sessionID)
+		let client = await AuthClient(sessionID: sessionID)
 		self.accessToken = try await client.refreshAccessToken()
 		??? RefreshError.sessionExpired
 	}
 	
 	enum EstablishmentError: Error {
 		case noSessionIDCookie
+		case noTDIDCookie
 	}
 	
 	enum RefreshError: Error {

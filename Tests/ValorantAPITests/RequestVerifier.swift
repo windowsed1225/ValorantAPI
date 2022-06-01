@@ -14,11 +14,13 @@ func testCommunication<T>(
 }
 
 /// A URLSession tht uses a request verifier to verify incoming requests and provide mock responses.
-let verifyingURLSession = URLSession(
-	configuration: .ephemeral <- {
-		$0.protocolClasses!.insert(VerifyingProtocol.self, at: 0)
-	}
-)
+func verifyingURLSession() -> URLSession {
+	.init(
+		configuration: .ephemeral <- {
+			$0.protocolClasses!.insert(VerifyingProtocol.self, at: 0)
+		}
+	)
+}
 
 private var verifier: RequestVerifier!
 

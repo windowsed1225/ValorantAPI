@@ -7,26 +7,45 @@ final actor AuthClient: Protoclient {
 	let urlSession: URLSession
 	var accessToken: AccessToken?
 	
-	var sessionID: String? {
-		urlSession.configuration.httpCookieStorage!.cookies!
-			.first { $0.name == "ssid" }?.value
+	private(set) var sessionID: String? {
+		get { cookie(named: "ssid") }
+		set {
+			if let id = newValue {
+				setCookie(named: "ssid", to: id)
+			}
+		}
+	}
+	private(set) var tdid: String? {
+		get { cookie(named: "tdid") }
+		set {
+			if let id = newValue {
+				setCookie(named: "tdid", to: id)
+			}
+		}
 	}
 	
-	init(sessionID: String? = nil, urlSessionOverride: URLSession? = nil) {
+	init(sessionID: String? = nil, tdid: String? = nil, urlSessionOverride: URLSession? = nil) async {
 		self.urlSession = urlSessionOverride ?? .init(
 			configuration: .ephemeral,
 			delegate: NoRedirectsDelegate.shared,
 			delegateQueue: nil
 		)
-		let cookies = urlSession.configuration.httpCookieStorage!
-		if let sessionID = sessionID {
-			cookies.setCookie(.init(properties: [
-				.name: "ssid",
-				.value: sessionID,
-				.path: "/",
-				.domain: "auth.riotgames.com",
-			])!)
-		}
+		self.sessionID = sessionID
+		self.tdid = tdid
+	}
+	
+	private func cookie(named name: String) -> String? {
+		urlSession.configuration.httpCookieStorage!.cookies!
+			.first { $0.name == name }?.value
+	}
+	
+	private func setCookie(named name: String, to value: String) {
+		urlSession.configuration.httpCookieStorage!.setCookie(.init(properties: [
+			.name: name,
+			.value: value,
+			.path: "/",
+			.domain: "auth.riotgames.com",
+		])!)
 	}
 	
 	let requestEncoder = JSONEncoder() <- {

@@ -5,6 +5,7 @@ import Protoquest
 public final class ValorantClient: Identifiable {
 	/// The decoder used to decode JSON data received from Riot's servers.
 	public static let responseDecoder = JSONDecoder() <- {
+		// TODO: should i even be converting here? would it make sense to convert from PascalCase like they seem to be using all over?
 		$0.keyDecodingStrategy = .convertFromSnakeCase
 		$0.dateDecodingStrategy = .iso8601OrTimestamp
 		$0.userInfo[.isDecodingFromRiot] = true
@@ -17,7 +18,7 @@ public final class ValorantClient: Identifiable {
 			location: .europe,
 			session: .init(
 				accessToken: .init(type: "", token: "", expiration: .distantFuture),
-				entitlementsToken: "", sessionID: ""
+				entitlementsToken: "", sessionID: "", tdid: ""
 			)
 		),
 		userID: .init()

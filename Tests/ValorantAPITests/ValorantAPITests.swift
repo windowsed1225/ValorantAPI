@@ -14,14 +14,7 @@ final class ValorantAPITests: XCTestCase {
 		try await testCommunication {
 			_ = try await APISession(
 				username: "username", password: "password",
-				urlSessionOverride: verifyingURLSession <- {
-					$0.configuration.httpCookieStorage!.setCookie(.init(properties: [
-						.name: "ssid",
-						.value: "SESSION_ID",
-						.domain: "auth.riotgames.com",
-						.path: "/",
-					])!)
-				},
+				urlSessionOverride: makeSession(),
 				multifactorHandler: { _ in fatalError() }
 			)
 		} expecting: {
@@ -43,14 +36,7 @@ final class ValorantAPITests: XCTestCase {
 		try await testCommunication {
 			_ = try await APISession(
 				username: "username", password: "password",
-				urlSessionOverride: verifyingURLSession <- {
-					$0.configuration.httpCookieStorage!.setCookie(.init(properties: [
-						.name: "ssid",
-						.value: "SESSION_ID",
-						.domain: "auth.riotgames.com",
-						.path: "/",
-					])!)
-				},
+				urlSessionOverride: makeSession(),
 				multifactorHandler: { info in
 					XCTAssertEqual(info, .init(version: "v2", codeLength: 6, method: "email", methods: ["email"], email: "jul**@****.com"))
 					return "123456"
@@ -79,6 +65,23 @@ final class ValorantAPITests: XCTestCase {
 			ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
 				.post()
 				.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
+		}
+	}
+	
+	private func makeSession() -> URLSession {
+		verifyingURLSession() <- {
+			$0.configuration.httpCookieStorage!.setCookie(.init(properties: [
+				.name: "ssid",
+				.value: "SESSION_ID",
+				.domain: "auth.riotgames.com",
+				.path: "/",
+			])!)
+			$0.configuration.httpCookieStorage!.setCookie(.init(properties: [
+				.name: "tdid",
+				.value: "TDID",
+				.domain: "auth.riotgames.com",
+				.path: "/",
+			])!)
 		}
 	}
 	
@@ -212,10 +215,11 @@ final class ValorantAPITests: XCTestCase {
 			session: .init(
 				accessToken: .init(type: "Bearer", token: "ACCESS_TOKEN", expiration: .distantFuture),
 				entitlementsToken: "ENTITLEMENTS_TOKEN",
-				sessionID: "SESSION_ID"
+				sessionID: "SESSION_ID",
+				tdid: "TDID"
 			),
 			userID: Self.playerID,
-			urlSessionOverride: verifyingURLSession
+			urlSessionOverride: verifyingURLSession()
 		)
 	}
 }
