@@ -3,12 +3,12 @@ import Protoquest
 import ErgonomicCodable
 
 extension ValorantClient {
-	public func getStorefront(for playerID: Player.ID) async throws -> Storefront {
-		try await send(StorefrontRequest(playerID: playerID))
+	public func getStorefront() async throws -> Storefront {
+		try await send(StorefrontRequest(playerID: userID))
 	}
 	
-	public func getStoreWallet(for playerID: Player.ID) async throws -> StoreWallet {
-		try await send(StoreWalletRequest(playerID: playerID))
+	public func getStoreWallet() async throws -> StoreWallet {
+		try await send(StoreWalletRequest(playerID: userID))
 	}
 	
 	public func getStoreOffers() async throws -> [StoreOffer] {
