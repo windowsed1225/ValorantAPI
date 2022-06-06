@@ -2,6 +2,30 @@ import Foundation
 
 public enum Weapon {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
+	
+	public enum Skin {
+		public typealias ID = ObjectID<Self, LowercaseUUID>
+		
+		public enum Level {
+			public typealias ID = ObjectID<Self, LowercaseUUID>
+		}
+		
+		public enum Chroma {
+			public typealias ID = ObjectID<Self, LowercaseUUID>
+		}
+	}
+	
+	public enum Charm {
+		public typealias ID = ObjectID<Self, LowercaseUUID>
+		
+		public enum Level {
+			public typealias ID = ObjectID<Self, LowercaseUUID>
+		}
+		
+		public enum Instance {
+			public typealias ID = ObjectID<Self, LowercaseUUID>
+		}
+	}
 }
 
 public extension Weapon.ID {
@@ -23,4 +47,26 @@ public extension Weapon.ID {
 	static let `operator` = Self("a03b24d3-4319-996d-0f8c-94bbfba1dfc7")!
 	static let ares = Self("55d8a0f4-4274-ca67-fe2c-06ab45efdf58")!
 	static let odin = Self("63e6c2b6-4a8e-869c-3d4c-e38355226584")!
+	
+	static let orderInShop = [
+		classic,
+		shorty,
+		frenzy,
+		ghost,
+		sheriff,
+		stinger,
+		spectre,
+		bucky,
+		judge,
+		bulldog,
+		guardian,
+		phantom,
+		vandal,
+		marshal,
+		`operator`,
+		ares,
+		odin,
+	]
+	
+	static let orderInCollection = orderInShop + [melee]
 }
