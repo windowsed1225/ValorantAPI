@@ -62,6 +62,12 @@ final class DecodingTests: XCTestCase {
 		XCTAssertEqual(inventory.agentsIncludingStarters.count, 19)
 	}
 	
+	func testDecodingLoadout() throws {
+		let loadout = try decode(Loadout.self, fromJSONNamed: "loadout")
+		dump(loadout)
+		XCTAssertEqual(loadout.guns.count, 18)
+	}
+	
 	func testDecodingStoreOffers() throws {
 		let response = try decode(StoreOffersRequest.Response.self, fromJSONNamed: "store_offers")
 		dump(response)
