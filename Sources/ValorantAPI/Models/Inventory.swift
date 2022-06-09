@@ -3,15 +3,15 @@ import Foundation
 public struct Inventory: Codable {
 	public static let starterAgents: Set<Agent.ID> = [.jett, .phoenix, .sova, .brimstone, .sage]
 	
-	public var agents: Set<Agent.ID>
-	public var agentsIncludingStarters: Set<Agent.ID>
-	public var cards: Set<PlayerCard.ID>
-	public var titles: Set<PlayerTitle.ID>
-	public var skinLevels: Set<Weapon.Skin.Level.ID>
-	public var skinChromas: Set<Weapon.Skin.Chroma.ID>
-	public var sprays: Set<Spray.ID>
-	public var contracts: Set<Contract.ID>
-	public var charms: [Weapon.Charm.ID: [Weapon.Charm.Instance.ID]]
+	public let agents: Set<Agent.ID>
+	public let agentsIncludingStarters: Set<Agent.ID>
+	public let cards: Set<PlayerCard.ID>
+	public let titles: Set<PlayerTitle.ID>
+	public let skinLevels: Set<Weapon.Skin.Level.ID>
+	public let skinChromas: Set<Weapon.Skin.Chroma.ID>
+	public let sprays: Set<Spray.ID>
+	public let contracts: Set<Contract.ID>
+	public let buddies: [Weapon.Buddy.ID: [Weapon.Buddy.Instance.ID]]
 	
 	init(_ raw: APIInventory) {
 		let collections = Dictionary(
@@ -31,20 +31,20 @@ public struct Inventory: Codable {
 		skinChromas = collectItems(.skinChromas)
 		sprays = collectItems(.sprays)
 		contracts = collectItems(.contracts)
-		charms = collections[.charms]?.items.lazy.map(Charm.init)
-			.reduce(into: [:]) { $0[$1.charm, default: []].append($1.instance) }
+		buddies = collections[.buddies]?.items.lazy.map(Buddy.init)
+			.reduce(into: [:]) { $0[$1.buddy, default: []].append($1.instance) }
 			?? [:]
 		
 		assert(agents.intersection(Self.starterAgents).isEmpty)
 		agentsIncludingStarters = agents.union(Self.starterAgents)
 	}
 	
-	private struct Charm {
-		var charm: Weapon.Charm.ID
-		var instance: Weapon.Charm.Instance.ID
+	private struct Buddy {
+		var buddy: Weapon.Buddy.ID
+		var instance: Weapon.Buddy.Instance.ID
 		
 		init(_ item: Item) {
-			charm = .init(rawID: item.id)
+			buddy = .init(rawID: item.id)
 			instance = .init(rawID: item.instanceID!)
 		}
 	}
@@ -58,7 +58,7 @@ private extension ItemCollection.ID {
 	static let skinChromas = Self("3ad1b2b2-acdb-4524-852f-954a76ddae0a")!
 	static let sprays = Self("d5f120f8-ff8c-4aac-92ea-f2b5acbe9475")!
 	static let contracts = Self("f85cb6f7-33e5-4dc8-b609-ec7212301948")!
-	static let charms = Self("dd3bf334-87f3-40bd-b043-682a57a8dc3a")!
+	static let buddies = Self("dd3bf334-87f3-40bd-b043-682a57a8dc3a")!
 }
 
 struct APIInventory: Decodable {

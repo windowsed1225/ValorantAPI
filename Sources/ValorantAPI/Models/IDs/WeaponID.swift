@@ -15,7 +15,7 @@ public enum Weapon {
 		}
 	}
 	
-	public enum Charm {
+	public enum Buddy {
 		public typealias ID = ObjectID<Self, LowercaseUUID>
 		
 		public enum Level {
