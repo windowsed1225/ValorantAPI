@@ -85,6 +85,16 @@ public struct Loadout: Codable {
 			public var level: Weapon.Skin.Level.ID
 			public var chroma: Weapon.Skin.Chroma.ID
 			
+			public init(
+				skin: Weapon.Skin.ID,
+				level: Weapon.Skin.Level.ID,
+				chroma: Weapon.Skin.Chroma.ID
+			) {
+				self.skin = skin
+				self.level = level
+				self.chroma = chroma
+			}
+			
 			private enum CodingKeys: String, CodingKey {
 				case skin = "SkinID"
 				case level = "SkinLevelID"
@@ -96,6 +106,16 @@ public struct Loadout: Codable {
 			public var buddy: Weapon.Buddy.ID
 			public var level: Weapon.Buddy.Level.ID
 			public var instance: Weapon.Buddy.Instance.ID
+			
+			public init(
+				buddy: Weapon.Buddy.ID,
+				level: Weapon.Buddy.Level.ID,
+				instance: Weapon.Buddy.Instance.ID
+			) {
+				self.buddy = buddy
+				self.level = level
+				self.instance = instance
+			}
 			
 			private enum CodingKeys: String, CodingKey {
 				case buddy = "CharmID"
@@ -118,7 +138,7 @@ public struct Loadout: Codable {
 	public struct Identity: Codable {
 		public var card: PlayerCard.ID
 		public var title: PlayerTitle.ID
-		private var levelBorder: LowercaseUUID
+		public var levelBorder: LevelBorder.ID
 		public var isLevelHidden: Bool
 		
 		private enum CodingKeys: String, CodingKey {
@@ -127,5 +147,32 @@ public struct Loadout: Codable {
 			case levelBorder = "PreferredLevelBorderID"
 			case isLevelHidden = "HideAccountLevel"
 		}
+	}
+}
+
+public struct UpdatableLoadout {
+	public let subject: User.ID
+	public var isIncognito: Bool
+	public var identity: Loadout.Identity
+	public var guns: [Weapon.ID: Loadout.Gun]
+	public var sprays: [Spray.Slot.ID: Spray.ID]
+	
+	public init(_ loadout: Loadout) {
+		subject = loadout.subject
+		isIncognito = loadout.isIncognito
+		identity = loadout.identity
+		guns = .init(uniqueKeysWithValues: loadout.guns.map { ($0.id, $0) })
+		sprays = .init(uniqueKeysWithValues: loadout.sprays.map { ($0.slot, $0.spray) })
+	}
+}
+
+extension Loadout {
+	public init(_ loadout: UpdatableLoadout) {
+		subject = loadout.subject
+		version = -1
+		isIncognito = loadout.isIncognito
+		identity = loadout.identity
+		guns = .init(loadout.guns.values)
+		sprays = .init(loadout.sprays.map(Loadout.EquippedSpray.init))
 	}
 }

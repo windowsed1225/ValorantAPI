@@ -11,7 +11,7 @@ public struct Inventory: Codable {
 	public let skinChromas: Set<Weapon.Skin.Chroma.ID>
 	public let sprays: Set<Spray.ID>
 	public let contracts: Set<Contract.ID>
-	public let buddies: [Weapon.Buddy.ID: [Weapon.Buddy.Instance.ID]]
+	public let buddies: [Weapon.Buddy.Level.ID: [Weapon.Buddy.Instance.ID]]
 	
 	init(_ raw: APIInventory) {
 		let collections = Dictionary(
@@ -32,7 +32,7 @@ public struct Inventory: Codable {
 		sprays = collectItems(.sprays)
 		contracts = collectItems(.contracts)
 		buddies = collections[.buddies]?.items.lazy.map(Buddy.init)
-			.reduce(into: [:]) { $0[$1.buddy, default: []].append($1.instance) }
+			.reduce(into: [:]) { $0[$1.level, default: []].append($1.instance) }
 			?? [:]
 		
 		assert(agents.intersection(Self.starterAgents).isEmpty)
@@ -40,11 +40,11 @@ public struct Inventory: Codable {
 	}
 	
 	private struct Buddy {
-		var buddy: Weapon.Buddy.ID
+		var level: Weapon.Buddy.Level.ID
 		var instance: Weapon.Buddy.Instance.ID
 		
 		init(_ item: Item) {
-			buddy = .init(rawID: item.id)
+			level = .init(rawID: item.id)
 			instance = .init(rawID: item.instanceID!)
 		}
 	}
