@@ -24,6 +24,8 @@ public struct Inventory: Codable {
 			Set(collections[type]?.items.lazy.map(\.id).map(ID.init(rawID:)) ?? [])
 		}
 		
+		// TODO: use InventoryItem protocol to gather these instead?
+		
 		agents = collectItems(.agents)
 		cards = collectItems(.cards)
 		titles = collectItems(.titles)
@@ -39,6 +41,12 @@ public struct Inventory: Codable {
 		agentsIncludingStarters = agents.union(Self.starterAgents)
 	}
 	
+	public func owns<Item: InventoryItem, RawID: Hashable>(
+		_ itemID: ObjectID<Item, RawID>
+	) -> Bool where Item.ID == ObjectID<Item, RawID> { // don't think about it too hard…
+		self[keyPath: Item.ownedItems].contains(itemID)
+	}
+	 
 	private struct Buddy {
 		var level: Weapon.Buddy.Level.ID
 		var instance: Weapon.Buddy.Instance.ID
@@ -48,6 +56,41 @@ public struct Inventory: Codable {
 			instance = .init(rawID: item.instanceID!)
 		}
 	}
+}
+
+public protocol InventoryItem {
+	associatedtype OwnedItems: Collection<ID>
+	associatedtype ID: Hashable
+	
+	static var ownedItems: KeyPath<Inventory, OwnedItems> { get }
+}
+
+extension Agent: InventoryItem {
+	public static let ownedItems = \Inventory.agentsIncludingStarters
+}
+
+extension PlayerCard: InventoryItem {
+	public static let ownedItems = \Inventory.cards
+}
+
+extension PlayerTitle: InventoryItem {
+	public static let ownedItems = \Inventory.titles
+}
+
+extension Weapon.Skin.Level: InventoryItem {
+	public static let ownedItems = \Inventory.skinLevels
+}
+
+extension Weapon.Skin.Chroma: InventoryItem {
+	public static let ownedItems = \Inventory.skinChromas
+}
+
+extension Spray: InventoryItem {
+	public static let ownedItems = \Inventory.sprays
+}
+
+extension Weapon.Buddy.Level: InventoryItem {
+	public static let ownedItems = \Inventory.buddies.keys
 }
 
 private extension ItemCollection.ID {

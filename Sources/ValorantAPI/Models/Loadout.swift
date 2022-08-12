@@ -164,6 +164,10 @@ public struct UpdatableLoadout {
 		guns = .init(uniqueKeysWithValues: loadout.guns.map { ($0.id, $0) })
 		sprays = .init(uniqueKeysWithValues: loadout.sprays.map { ($0.slot, $0.spray) })
 	}
+	
+	public func currentWeapon(for instance: Weapon.Buddy.Instance.ID) -> Weapon.ID? {
+		guns.values.first { $0.buddy?.instance == instance }?.id
+	}
 }
 
 extension Loadout {
