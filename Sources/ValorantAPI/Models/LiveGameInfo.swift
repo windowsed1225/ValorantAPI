@@ -59,8 +59,20 @@ public struct LiveGameInfo: Codable, BasicMatchInfo {
 		public var id: Player.ID
 		
 		public var teamID: Team.ID
-		public var agentID: Agent.ID
+		/// this is `nil` in the range
+		public var agentID: Agent.ID?
 		public var identity: Player.Identity
+		
+		// i'm gonna kill whoever decided to encode not having an agent as empty string rather than null
+		public init(from decoder: Decoder) throws {
+			let container = try decoder.container(keyedBy: CodingKeys.self)
+			self.id = try container.decode(Player.ID.self, forKey: .id)
+			self.teamID = try container.decode(Team.ID.self, forKey: .teamID)
+			self.identity = try container.decode(Player.Identity.self, forKey: .identity)
+			
+			let rawAgentID = try container.decode(String.self, forKey: .agentID)
+			self.agentID = rawAgentID.isEmpty ? nil : try container.decode(Agent.ID.self, forKey: .agentID)
+		}
 		
 		private enum CodingKeys: String, CodingKey {
 			case id = "Subject"
