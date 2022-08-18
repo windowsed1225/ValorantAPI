@@ -102,7 +102,7 @@ public struct Loadout: Codable {
 			}
 		}
 		
-		public struct Buddy: Codable {
+		public struct Buddy: Equatable, Codable {
 			public var buddy: Weapon.Buddy.ID
 			public var level: Weapon.Buddy.Level.ID
 			public var instance: Weapon.Buddy.Instance.ID
