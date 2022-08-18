@@ -150,6 +150,22 @@ public struct Loadout: Codable {
 	}
 }
 
+extension LowercaseUUID {
+	// i DESPISE when people (riot…) do this. null exists for a reason!!!!
+	private static let stupidNullID = Self(.init(uuidString: "00000000-0000-0000-0000-000000000000")!)
+	
+	public var isPseudoNull: Bool {
+		self == .stupidNullID
+	}
+}
+
+extension ObjectID where RawID == LowercaseUUID {
+	/// player cards/titles/level borders are initially set to an all-zeroes ID rather than null for no good reason.
+	public var isPseudoNull: Bool {
+		rawID.isPseudoNull
+	}
+}
+
 public struct UpdatableLoadout {
 	public let subject: User.ID
 	public var isIncognito: Bool
