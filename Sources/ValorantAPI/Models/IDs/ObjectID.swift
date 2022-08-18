@@ -62,6 +62,10 @@ public enum PlayerTitle {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 }
 
+extension PlayerTitle.ID {
+	public static let noTitle = Self("d13e579c-435e-44d4-cec2-6eae5a3c5ed4")!
+}
+
 public enum Armor {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 }
