@@ -8,7 +8,7 @@ public struct Party: Identifiable, Codable {
 	public var members: [Member]
 	public var state: State
 	public var accessibility: Accessibility
-	public var eligibleQueues: [QueueID]
+	public var eligibleQueues: [QueueID]?
 	/// the last time this party entered the queue (even if it's not currently in a queue—check the state for that)
 	public var queueEntryTime: Date
 	public var matchmakingData: MatchmakingData
