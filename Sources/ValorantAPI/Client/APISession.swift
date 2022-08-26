@@ -48,7 +48,7 @@ extension APISession {
 	}
 	
 	mutating func refreshAccessToken() async throws {
-		let client = await AuthClient(sessionID: sessionID)
+		let client = await AuthClient(sessionID: sessionID, tdid: tdid)
 		self.accessToken = try await client.refreshAccessToken()
 		??? RefreshError.sessionExpired
 	}
