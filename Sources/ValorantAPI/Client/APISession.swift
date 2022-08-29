@@ -4,8 +4,30 @@ import HandyOperators
 public struct APISession: Codable, Equatable {
 	var accessToken: AccessToken
 	var entitlementsToken: String
-	var sessionID: String
-	var tdid: String // another session cookie; not sure what TD would be
+	var cookies: [Cookie]
+}
+
+struct Cookie: Codable, Hashable {
+	var name: String
+	var value: String
+	var domain: String
+	var path: String
+	
+	init(_ httpCookie: HTTPCookie) {
+		name = httpCookie.name
+		value = httpCookie.value
+		domain = httpCookie.domain
+		path = httpCookie.path
+	}
+	
+	var httpCookie: HTTPCookie {
+		.init(properties: [
+			.name: name,
+			.value: value,
+			.domain: domain,
+			.path: path,
+		])!
+	}
 }
 
 struct AccessToken: Codable, Hashable {
@@ -40,15 +62,12 @@ extension APISession {
 		self.entitlementsToken = try await client
 			.getEntitlementsToken()
 		
-		self.sessionID = try await client.sessionID
-		??? EstablishmentError.noSessionIDCookie
-		
-		self.tdid = try await client.tdid
-		??? EstablishmentError.noTDIDCookie
+		self.cookies = await client.cookies().map(Cookie.init)
 	}
 	
 	mutating func refreshAccessToken() async throws {
-		let client = await AuthClient(sessionID: sessionID, tdid: tdid)
+		let client = await AuthClient()
+		await client.setCookies(cookies.map(\.httpCookie))
 		self.accessToken = try await client.refreshAccessToken()
 		??? RefreshError.sessionExpired
 	}

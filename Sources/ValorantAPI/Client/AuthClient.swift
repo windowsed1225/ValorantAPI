@@ -7,45 +7,20 @@ final actor AuthClient: Protoclient {
 	let urlSession: URLSession
 	var accessToken: AccessToken?
 	
-	private(set) var sessionID: String? {
-		get { cookie(named: "ssid") }
-		set {
-			if let id = newValue {
-				setCookie(named: "ssid", to: id)
-			}
-		}
-	}
-	private(set) var tdid: String? {
-		get { cookie(named: "tdid") }
-		set {
-			if let id = newValue {
-				setCookie(named: "tdid", to: id)
-			}
-		}
-	}
-	
-	init(sessionID: String? = nil, tdid: String? = nil, urlSessionOverride: URLSession? = nil) async {
+	init(urlSessionOverride: URLSession? = nil) async {
 		self.urlSession = urlSessionOverride ?? .init(
 			configuration: .ephemeral,
 			delegate: NoRedirectsDelegate.shared,
 			delegateQueue: nil
 		)
-		self.sessionID = sessionID
-		self.tdid = tdid
 	}
 	
-	private func cookie(named name: String) -> String? {
-		urlSession.configuration.httpCookieStorage!.cookies!
-			.first { $0.name == name }?.value
+	func cookies() -> [HTTPCookie] {
+		urlSession.configuration.httpCookieStorage!.cookies ?? []
 	}
 	
-	private func setCookie(named name: String, to value: String) {
-		urlSession.configuration.httpCookieStorage!.setCookie(.init(properties: [
-			.name: name,
-			.value: value,
-			.path: "/",
-			.domain: "auth.riotgames.com",
-		])!)
+	func setCookies(_ cookies: [HTTPCookie]) {
+		cookies.forEach(urlSession.configuration.httpCookieStorage!.setCookie(_:))
 	}
 	
 	let requestEncoder = JSONEncoder() <- {

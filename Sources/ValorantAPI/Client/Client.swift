@@ -18,7 +18,8 @@ public final class ValorantClient: Identifiable {
 			location: .europe,
 			session: .init(
 				accessToken: .init(type: "", token: "", expiration: .distantFuture),
-				entitlementsToken: "", sessionID: "", tdid: ""
+				entitlementsToken: "",
+				cookies: []
 			)
 		),
 		userID: .init()
