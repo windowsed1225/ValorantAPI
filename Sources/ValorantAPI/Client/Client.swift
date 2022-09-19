@@ -115,7 +115,7 @@ private final actor Client: Identifiable, Protoclient {
 	private(set) var session: APISession
 	private(set) var clientVersion: String?
 	
-	let baseURL: URL
+	nonisolated var baseURL: URL { fatalError() }
 	
 	func setClientVersion(_ version: String) {
 		self.clientVersion = version
@@ -130,13 +130,18 @@ private final actor Client: Identifiable, Protoclient {
 		self.location = location
 		self.session = session
 		self.clientVersion = version
-		self.baseURL = BaseURLs.gameAPI(location: location)
 		self.urlSession = urlSessionOverride ?? .init(configuration: .ephemeral)
 	}
 	
 	private static let encodedPlatformInfo = try! JSONEncoder()
 		.encode(PlatformInfo.supportedExample)
 		.base64EncodedString()
+	
+	func baseURL(for request: some Request) async throws -> URL {
+		(request is any LiveGameRequest)
+		? BaseURLs.liveGameAPI(location: location)
+		: BaseURLs.gameAPI(location: location)
+	}
 	
 	func addHeaders(to rawRequest: inout URLRequest) async throws {
 		if session.accessToken.hasExpired {

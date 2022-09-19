@@ -7,7 +7,7 @@ extension ValorantClient {
 	public func getLiveMatch(inPregame: Bool) async throws -> Match.ID? {
 		do {
 			return try await send(LivePlayerInfoRequest(
-				playerID: userID, inPregame: inPregame, location: location
+				playerID: userID, inPregame: inPregame
 			)).matchID
 		} catch APIError.resourceNotFound {
 			return nil
@@ -16,15 +16,15 @@ extension ValorantClient {
 	
 	/// Gets the pregame (agent select) info for a match in that state.
 	public func getLivePregameInfo(_ matchID: Match.ID) async throws -> LivePregameInfo {
-		try await send(LiveMatchInfoRequest<LivePregameInfo>(
-			matchID: matchID, inPregame: true, location: location
+		try await send(LiveMatchInfoRequest(
+			matchID: matchID, inPregame: true
 		))
 	}
 	
 	/// Gets the live game info for a running match.
 	public func getLiveGameInfo(_ matchID: Match.ID) async throws -> LiveGameInfo {
-		try await send(LiveMatchInfoRequest<LiveGameInfo>(
-			matchID: matchID, inPregame: false, location: location
+		try await send(LiveMatchInfoRequest(
+			matchID: matchID, inPregame: false
 		))
 	}
 	
@@ -35,8 +35,7 @@ extension ValorantClient {
 	) async throws -> LivePregameInfo {
 		try await send(PickAgentRequest(
 			matchID: matchID, agentID: agentID,
-			shouldLock: shouldLock,
-			location: location
+			shouldLock: shouldLock
 		))
 	}
 	
@@ -54,7 +53,6 @@ extension ValorantClient {
 private struct LivePlayerInfoRequest: GetJSONRequest, LiveGameRequest {
 	var playerID: Player.ID
 	var inPregame: Bool
-	var location: Location
 	
 	var path: String {
 		"/\(inPregame ? "pregame" : "core-game")/v1/players/\(playerID)"
@@ -72,7 +70,6 @@ private struct LivePlayerInfoRequest: GetJSONRequest, LiveGameRequest {
 private struct LiveMatchInfoRequest<Response: Decodable>: GetJSONRequest, LiveGameRequest {
 	var matchID: Match.ID
 	var inPregame: Bool
-	var location: Location
 	
 	var path: String {
 		"/\(inPregame ? "pregame" : "core-game")/v1/matches/\(matchID)"
@@ -87,7 +84,6 @@ private struct PickAgentRequest: GetJSONRequest, LiveGameRequest {
 	var shouldLock: Bool
 	
 	var inPregame: Bool { true }
-	var location: Location
 	
 	var path: String {
 		"/pregame/v1/matches/\(matchID)/\(shouldLock ? "lock" : "select")/\(agentID)"
@@ -96,12 +92,5 @@ private struct PickAgentRequest: GetJSONRequest, LiveGameRequest {
 	typealias Response = LivePregameInfo
 }
 
-protocol LiveGameRequest: Request {
-	var location: Location { get }
-}
-
-extension LiveGameRequest {
-	var baseURLOverride: URL? {
-		BaseURLs.liveGameAPI(location: location)
-	}
-}
+/// marks requests as needing a different base URL
+protocol LiveGameRequest: Request {}
