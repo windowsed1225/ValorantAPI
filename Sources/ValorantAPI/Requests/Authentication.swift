@@ -50,17 +50,30 @@ extension AuthClient {
 		let lastPart = response.components(separatedBy: " ").last!
 		guard !lastPart.starts(with: "/login") else { return nil } // session expired
 		let url = try URL(string: lastPart)
-		??? AuthHandlingError.missingRedirectURL(response)
+		??? AuthHandlingError.missingRedirectURL(response: response)
 		return try url.extractAccessToken()
 		??? AuthHandlingError.invalidTokenURL(url)
 	}
 }
 
-enum AuthHandlingError: Error {
+enum AuthHandlingError: Error, LocalizedError {
 	case missingResponseBody
 	case invalidTokenURL(URL)
 	case unexpectedError(String?)
-	case missingRedirectURL(String)
+	case missingRedirectURL(response: String)
+	
+	var errorDescription: String? {
+		switch self {
+		case .missingResponseBody:
+			return "[Auth] Missing Response Body"
+		case .invalidTokenURL(let url):
+			return "[Auth] Invalid Token URL (don't share this publicly!): \(url)"
+		case .unexpectedError(let error):
+			return "[Auth] Unexpected Error: \(error ?? "<no message>")"
+		case .missingRedirectURL(let response):
+			return "[Auth] Missing Redirect URL: \(response)"
+		}
+	}
 }
 
 public struct AuthenticationError: LocalizedError {
