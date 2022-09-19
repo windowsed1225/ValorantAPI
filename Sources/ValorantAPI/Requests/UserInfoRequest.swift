@@ -10,7 +10,7 @@ extension ValorantClient {
 private struct UserInfoRequest: JSONJSONRequest {
 	var httpMethod: String { "PUT" }
 	
-	var path: String { "name-service/v2/players"}
+	var path: String { "name-service/v2/players" }
 	
 	var body: [User.ID]
 	
