@@ -15,11 +15,12 @@ public final class ValorantClient: Identifiable {
 	/// A mocked client that's not actually signed in, for testing.
 	public static let mocked = ValorantClient(
 		client: .init(
-			location: .europe,
 			session: .init(
 				accessToken: .init(type: "", token: "", expiration: .distantFuture),
 				entitlementsToken: "",
-				cookies: []
+				cookies: [],
+				location: .europe,
+				userID: .init()
 			)
 		),
 		userID: .init()
@@ -27,22 +28,20 @@ public final class ValorantClient: Identifiable {
 	#endif
 	
 	public let userID: User.ID
-	public var location: Location { client.location }
 	
 	private let client: Client
 	
-	public convenience init(location: Location, session: APISession, urlSessionOverride: URLSession? = nil) throws {
-		let userID = try session.accessToken.extractUserID()
-		let client = Client(location: location, session: session, urlSessionOverride: urlSessionOverride)
+	public convenience init(session: APISession, urlSessionOverride: URLSession? = nil) {
+		let userID = session.userID
+		let client = Client(session: session, urlSessionOverride: urlSessionOverride)
 		self.init(client: client, userID: userID)
 	}
 	
 	#if DEBUG
 	// for testing
-	convenience init(location: Location, session: APISession, userID: User.ID, urlSessionOverride: URLSession) {
+	convenience init(session: APISession, userID: User.ID, urlSessionOverride: URLSession) {
 		self.init(
 			client: .init(
-				location: location,
 				session: session,
 				version: nil,
 				urlSessionOverride: urlSessionOverride
@@ -70,28 +69,23 @@ extension ValorantClient {
 	public convenience init(from saved: SavedData) {
 		self.init(
 			client: .init(
-				location: saved.location,
 				session: saved.session,
 				version: saved.version
 			),
-			userID: saved.userID
+			userID: saved.session.userID
 		)
 	}
 	
 	public func store() async -> SavedData {
 		.init(
 			session: await client.session,
-			location: client.location,
-			version: await client.clientVersion,
-			userID: userID
+			version: await client.clientVersion
 		)
 	}
 	
 	public struct SavedData: Codable, Equatable {
 		fileprivate var session: APISession
-		fileprivate var location: Location
 		fileprivate var version: String?
-		fileprivate var userID: User.ID
 	}
 }
 
@@ -103,6 +97,7 @@ public struct RiotError: Decodable {
 	public var message: String
 }
 
+// TODO: separate into struct providing context for requests (so we can e.g. make a copy with a different location) and actor handling data-race-sensitive stuff
 private final actor Client: Identifiable, Protoclient {
 	typealias APIError = ValorantClient.APIError
 	
@@ -122,12 +117,11 @@ private final actor Client: Identifiable, Protoclient {
 	}
 	
 	init(
-		location: Location,
 		session: APISession,
 		version: String? = nil,
 		urlSessionOverride: URLSession? = nil
 	) {
-		self.location = location
+		self.location = session.location
 		self.session = session
 		self.clientVersion = version
 		self.urlSession = urlSessionOverride ?? .init(configuration: .ephemeral)

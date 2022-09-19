@@ -18,4 +18,8 @@ public struct Location: Hashable, Codable {
 		self.region = region
 		self.shard = shard
 	}
+	
+	public static func location(forRegion region: String) -> Location? {
+		all.first { $0.region == region }
+	}
 }

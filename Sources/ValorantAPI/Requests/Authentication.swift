@@ -18,6 +18,14 @@ extension AuthClient {
 		return try await handleAuthResponse(response, multifactorHandler: multifactorHandler)
 	}
 	
+	func getUserInfo() async throws -> (User.ID, Location) {
+		let userInfo = try await send(UserInfoRequest())
+		let region = userInfo.affinity.pp
+		let location = try Location.location(forRegion: region)
+		??? AuthHandlingError.unknownRegion(region)
+		return (userInfo.sub, location)
+	}
+	
 	private func handleAuthResponse(
 		_ response: AuthResponse,
 		multifactorHandler: MultifactorHandler
@@ -61,6 +69,7 @@ enum AuthHandlingError: Error, LocalizedError {
 	case invalidTokenURL(URL)
 	case unexpectedError(String?)
 	case missingRedirectURL(response: String)
+	case unknownRegion(String)
 	
 	var errorDescription: String? {
 		switch self {
@@ -72,6 +81,8 @@ enum AuthHandlingError: Error, LocalizedError {
 			return "[Auth] Unexpected Error: \(error ?? "<no message>")"
 		case .missingRedirectURL(let response):
 			return "[Auth] Missing Redirect URL: \(response)"
+		case .unknownRegion(let region):
+			return "[Auth] Unknown Region: \(region)"
 		}
 	}
 }
@@ -185,6 +196,21 @@ private struct ReauthRequest: GetStringRequest {
 		("redirect_uri", base.redirectURI)
 		("nonce", base.nonce)
 		("scope", base.scope)
+	}
+}
+
+private struct UserInfoRequest: GetJSONRequest {
+	typealias Response = UserInfo
+	
+	var path: String { "userinfo" }
+}
+
+private struct UserInfo: Codable {
+	var sub: User.ID
+	var affinity: Affinity
+	
+	struct Affinity: Codable {
+		var pp: String // lol
 	}
 }
 
