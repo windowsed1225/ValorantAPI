@@ -183,18 +183,25 @@ private final actor Client: Identifiable, Protoclient {
 			waitingForSession = []
 		}
 		
+		// lol
 		do {
-			// for some reason swift forbids in-place mutation for isolated properties
-			session = try await session <- { try await $0.refreshAccessToken() }
-			
-			waitingForSession.forEach { $0.resume() }
-		} catch {
-			waitingForSession.forEach { $0.resume(throwing: error) }
-			if case APISession.RefreshError.sessionExpired = error {
-				throw APIError.sessionExpired
-			} else {
-				throw APIError.sessionResumptionFailure(error)
+			do {
+				do {
+					// for some reason swift forbids in-place mutation for isolated properties
+					session = try await session <- { try await $0.refreshAccessToken() }
+				} catch APISession.RefreshError.sessionExpired {
+					throw APIError.sessionExpired
+				}
+				
+				waitingForSession.forEach { $0.resume() }
+			} catch {
+				waitingForSession.forEach { $0.resume(throwing: error) }
+				throw error
 			}
+		} catch APIError.sessionExpired {
+			throw APIError.sessionExpired
+		} catch {
+			throw APIError.sessionResumptionFailure(error)
 		}
 	}
 	
