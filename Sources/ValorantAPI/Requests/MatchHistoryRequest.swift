@@ -5,12 +5,12 @@ import Protoquest
 extension ValorantClient {
 	/// Fetches (part of) a match history, optionally filtered to a queue.
 	public func getMatchHistory(
-		userID: Player.ID,
+		userID: Player.ID? = nil,
 		queue: QueueID? = nil,
 		startIndex: Int = 0
 	) async throws -> [MatchHistoryEntry] {
 		try await send(MatchHistoryRequest(
-			userID: userID,
+			userID: userID ?? self.userID,
 			startIndex: startIndex, endIndex: startIndex + 20,
 			queue: queue
 		)).history
