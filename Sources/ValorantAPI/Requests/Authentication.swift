@@ -78,8 +78,7 @@ public struct AuthenticationError: LocalizedError {
 private struct CookiesRequest: JSONJSONRequest, Encodable {
 	typealias Response = AuthResponse
 	
-	var baseURLOverride: URL? { BaseURLs.authAPI }
-	var path: String { "authorization" }
+	var path: String { "api/v1/authorization" }
 	
 	let clientID = "play-valorant-web-prod"
 	let responseType = "token id_token"
@@ -95,8 +94,7 @@ where Response == AuthResponse {
 
 extension AuthRequest {
 	var httpMethod: String { "PUT" }
-	var baseURLOverride: URL? { BaseURLs.authAPI }
-	var path: String { "authorization" }
+	var path: String { "api/v1/authorization" }
 }
 
 private struct CredentialsAuthRequest: AuthRequest {
@@ -165,7 +163,6 @@ public struct MultifactorInfo: Decodable, Hashable {
 }
 
 private struct ReauthRequest: GetStringRequest {
-	var baseURLOverride: URL? { BaseURLs.auth }
 	var path: String { "authorize" }
 	
 	var urlParams: [URLParameter] {

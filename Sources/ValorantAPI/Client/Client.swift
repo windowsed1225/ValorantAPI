@@ -238,8 +238,7 @@ extension Decoder {
 }
 
 enum BaseURLs {
-	static let auth = URL(string: "https://auth.riotgames.com")!
-	static let authAPI = auth.appendingPathComponent("api/v1")
+	static let authAPI = URL(string: "https://auth.riotgames.com")!
 	static let entitlementsAPI = URL(string: "https://entitlements.auth.riotgames.com/api")!
 	
 	static func gameAPI(location: Location) -> URL {
