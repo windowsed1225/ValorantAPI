@@ -1,6 +1,7 @@
 import Foundation
 import HandyOperators
 import Protoquest
+import Combine
 
 public final class ValorantClient: Identifiable {
 	/// The decoder used to decode JSON data received from Riot's servers.
@@ -13,23 +14,13 @@ public final class ValorantClient: Identifiable {
 	
 	#if DEBUG
 	/// A mocked client that's not actually signed in, for testing.
-	public static let mocked = ValorantClient(
-		client: .init(
-			session: .init(
-				accessToken: .init(type: "", token: "", expiration: .distantFuture),
-				entitlementsToken: "",
-				cookies: [],
-				location: .europe,
-				userID: .init()
-			)
-		),
-		userID: .init()
-	)
+	public static let mocked = ValorantClient(session: .mocked)
 	#endif
 	
 	public let userID: User.ID
 	
 	private let client: Client
+	private var sessionUpdateTokens: [AnyCancellable] = []
 	
 	public convenience init(session: APISession, urlSessionOverride: URLSession? = nil) {
 		let userID = session.userID
@@ -37,23 +28,14 @@ public final class ValorantClient: Identifiable {
 		self.init(client: client, userID: userID)
 	}
 	
-	#if DEBUG
-	// for testing
-	convenience init(session: APISession, userID: User.ID, urlSessionOverride: URLSession) {
-		self.init(
-			client: .init(
-				session: session,
-				version: nil,
-				urlSessionOverride: urlSessionOverride
-			),
-			userID: userID
-		)
-	}
-	#endif
-	
 	private init(client: Client, userID: User.ID) {
 		self.client = client
 		self.userID = userID
+	}
+	
+	public func onSessionUpdate(call handle: @escaping ((APISession) -> Void)) {
+		let token = client.sessionSubject.sink(receiveValue: handle)
+		sessionUpdateTokens.append(token)
 	}
 	
 	func send<R: Request>(_ request: R) async throws -> R.Response {
@@ -63,29 +45,9 @@ public final class ValorantClient: Identifiable {
 	public func setClientVersion(_ version: String) async {
 		await client.setClientVersion(version)
 	}
-}
-
-extension ValorantClient {
-	public convenience init(from saved: SavedData) {
-		self.init(
-			client: .init(
-				session: saved.session,
-				version: saved.version
-			),
-			userID: saved.session.userID
-		)
-	}
 	
-	public func store() async -> SavedData {
-		.init(
-			session: await client.session,
-			version: await client.clientVersion
-		)
-	}
-	
-	public struct SavedData: Codable, Equatable {
-		fileprivate var session: APISession
-		fileprivate var version: String?
+	public func getSession() async -> APISession {
+		await client.session
 	}
 }
 
@@ -107,10 +69,14 @@ private final actor Client: Identifiable, Protoclient {
 	let location: Location
 	let urlSession: URLSession
 	
-	private(set) var session: APISession
-	private(set) var clientVersion: String?
-	
 	nonisolated var baseURL: URL { fatalError() }
+	
+	private(set) var session: APISession {
+		didSet { sessionSubject.send(session) }
+	}
+	let sessionSubject = PassthroughSubject<APISession, Never>()
+	
+	private(set) var clientVersion: String?
 	
 	func setClientVersion(_ version: String) {
 		self.clientVersion = version

@@ -9,11 +9,12 @@ extension AuthClient {
 	}
 	
 	func getAccessToken(
-		username: String, password: String,
+		credentials: Credentials,
 		multifactorHandler: MultifactorHandler
 	) async throws -> AccessToken {
 		let response = try await send(CredentialsAuthRequest(
-			username: username, password: password
+			username: credentials.username,
+			password: credentials.password
 		))
 		return try await handleAuthResponse(response, multifactorHandler: multifactorHandler)
 	}
@@ -154,6 +155,16 @@ private struct AuthResponse: Decodable {
 		struct Parameters: Decodable {
 			var uri: URL
 		}
+	}
+}
+
+public struct Credentials: Hashable, Codable {
+	public var username: String
+	public var password: String
+	
+	public init(username: String = "", password: String = "") {
+		self.username = username
+		self.password = password
 	}
 }
 

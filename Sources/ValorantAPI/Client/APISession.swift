@@ -1,12 +1,27 @@
 import Foundation
 import HandyOperators
 
-public struct APISession: Codable, Equatable {
+public struct APISession: Codable {
+	var credentials: Credentials
 	var accessToken: AccessToken
 	var entitlementsToken: String
 	var cookies: [Cookie]
 	var location: Location
-	var userID: User.ID
+	public let userID: User.ID
+	/// Set to true when the session realizes it has expired unrecoverably (requiring a credentials change or MFA input).
+	public private(set) var hasExpired = false
+	
+#if DEBUG
+	/// A mocked session with bogus data, for testing.
+	public static let mocked = Self(
+		credentials: .init(),
+		accessToken: .init(type: "", token: "", expiration: .distantFuture),
+		entitlementsToken: "",
+		cookies: [],
+		location: .europe,
+		userID: .init()
+	)
+#endif
 }
 
 struct Cookie: Codable, Hashable {
@@ -48,21 +63,27 @@ struct AccessToken: Codable, Hashable {
 
 extension APISession {
 	public init(
-		username: String, password: String,
+		credentials: Credentials,
+		withCookiesFrom other: APISession? = nil,
 		urlSessionOverride: URLSession? = nil,
 		multifactorHandler: MultifactorHandler
 	) async throws {
+		self.credentials = credentials
+		
 		let client = await AuthClient(urlSessionOverride: urlSessionOverride)
-		try await client.establishSession()
+		if let other {
+			await client.setCookies(other.cookies.map(\.httpCookie))
+		} else {
+			try await client.establishSession()
+		}
 		
 		self.accessToken = try await client.getAccessToken(
-			username: username, password: password,
+			credentials: credentials,
 			multifactorHandler: multifactorHandler
 		)
 		await client.setAccessToken(accessToken)
 		
-		self.entitlementsToken = try await client
-			.getEntitlementsToken()
+		self.entitlementsToken = try await client.getEntitlementsToken()
 		
 		(self.userID, self.location) = try await client.getUserInfo()
 		
@@ -72,13 +93,20 @@ extension APISession {
 	mutating func refreshAccessToken() async throws {
 		let client = await AuthClient()
 		await client.setCookies(cookies.map(\.httpCookie))
-		self.accessToken = try await client.refreshAccessToken()
-		??? RefreshError.sessionExpired
-	}
-	
-	enum EstablishmentError: Error {
-		case noSessionIDCookie
-		case noTDIDCookie
+		do {
+			if let token = try? await client.refreshAccessToken() {
+				accessToken = token
+			} else {
+				// try signing in again, with the same cookies
+				accessToken = try await client.getAccessToken(
+					credentials: credentials,
+					multifactorHandler: { _ in throw RefreshError.sessionExpired }
+				)
+			}
+		} catch {
+			hasExpired = true
+			throw RefreshError.sessionExpired
+		}
 	}
 	
 	enum RefreshError: Error {
