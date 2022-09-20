@@ -31,7 +31,7 @@ extension ValorantClient {
 	/// Selects or locks in an agent.
 	public func pickAgent(
 		_ agentID: Agent.ID, in matchID: Match.ID,
-		shouldLock: Bool
+		shouldLock: Bool = false
 	) async throws -> LivePregameInfo {
 		try await send(PickAgentRequest(
 			matchID: matchID, agentID: agentID,
