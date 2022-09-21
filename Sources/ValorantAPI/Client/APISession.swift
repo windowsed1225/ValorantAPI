@@ -15,7 +15,7 @@ public struct APISession: Codable {
 	/// A mocked session with bogus data, for testing.
 	public static let mocked = Self(
 		credentials: .init(),
-		accessToken: .init(type: "", token: "", expiration: .distantFuture),
+		accessToken: .init(type: "", token: "", idToken: "", expiration: .distantFuture),
 		entitlementsToken: "",
 		cookies: [],
 		location: .europe,
@@ -50,6 +50,7 @@ struct Cookie: Codable, Hashable {
 struct AccessToken: Codable, Hashable {
 	var type: String
 	var token: String
+	var idToken: String = "" // TODO: temporarily defaulting since we don't need this for already-signed-in users and this maintains backwards compatibility with stored sessions
 	var expiration: Date
 	
 	var encoded: String {
@@ -77,15 +78,20 @@ extension APISession {
 			try await client.establishSession()
 		}
 		
-		self.accessToken = try await client.getAccessToken(
+		let accessToken = try await client.getAccessToken(
 			credentials: credentials,
 			multifactorHandler: multifactorHandler
 		)
+		self.accessToken = accessToken
 		await client.setAccessToken(accessToken)
 		
-		self.entitlementsToken = try await client.getEntitlementsToken()
-		
-		(self.userID, self.location) = try await client.getUserInfo()
+		// parallelization!
+		async let entitlement = client.getEntitlementsToken()
+		async let userID = client.getUserID()
+		async let location = client.getLocation(using: accessToken)
+		self.entitlementsToken = try await entitlement
+		self.userID = try await userID
+		self.location = try await location
 		
 		self.cookies = await client.cookies().map(Cookie.init)
 	}

@@ -19,12 +19,15 @@ extension AuthClient {
 		return try await handleAuthResponse(response, multifactorHandler: multifactorHandler)
 	}
 	
-	func getUserInfo() async throws -> (User.ID, Location) {
-		let userInfo = try await send(UserInfoRequest())
-		let region = userInfo.affinity.pp
-		let location = try Location.location(forRegion: region)
+	func getUserID() async throws -> User.ID {
+		try await send(UserInfoRequest()).sub
+	}
+	
+	func getLocation(using token: AccessToken) async throws -> Location {
+		let pasInfo = try await send(PASRequest(idToken: token.idToken))
+		let region = pasInfo.affinities.live
+		return try Location.location(forRegion: region)
 		??? AuthHandlingError.unknownRegion(region)
-		return (userInfo.sub, location)
 	}
 	
 	private func handleAuthResponse(
@@ -211,17 +214,30 @@ private struct ReauthRequest: GetStringRequest {
 }
 
 private struct UserInfoRequest: GetJSONRequest {
-	typealias Response = UserInfo
-	
 	var path: String { "userinfo" }
+	
+	struct Response: Decodable {
+		var sub: User.ID
+	}
 }
 
-private struct UserInfo: Codable {
-	var sub: User.ID
-	var affinity: Affinity
+private struct PASRequest: JSONJSONRequest, Encodable {
+	var baseURLOverride: URL? {
+		.init(string: "https://riot-geo.pas.si.riotgames.com")!
+	}
 	
-	struct Affinity: Codable {
-		var pp: String // lol
+	var httpMethod: String { "PUT" }
+	var path: String { "pas/v1/product/valorant" }
+	
+	var idToken: String
+	
+	struct Response: Decodable {
+		var token: String
+		var affinities: Affinities
+		
+		struct Affinities: Decodable {
+			var live: String
+		}
 	}
 }
 
@@ -244,11 +260,13 @@ extension URL {
 		guard
 			let type = values["token_type"],
 			let token = values["access_token"],
+			let idToken = values["id_token"],
 			let duration = values["expires_in"].flatMap(Int.init)
 		else { return nil }
 		return .init(
 			type: type,
 			token: token,
+			idToken: idToken,
 			expiration: .init(timeIntervalSinceNow: .init(duration) - 30) // 30s tolerance to make sure we don't try to use an expired token
 		)
 	}

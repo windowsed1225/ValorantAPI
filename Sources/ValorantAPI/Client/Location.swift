@@ -19,12 +19,7 @@ public struct Location: Hashable, Codable {
 		self.shard = shard
 	}
 	
-	private static let overrides: [String: Location] = [
-		"as": .asiaPacific,
-		"am": .northAmerica,
-	]
-	
 	public static func location(forRegion region: String) -> Location? {
-		all.first { $0.region == region } ?? overrides[region]
+		all.first { $0.region == region }
 	}
 }
