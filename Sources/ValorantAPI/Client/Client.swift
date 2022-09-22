@@ -49,6 +49,10 @@ public final class ValorantClient: Identifiable {
 	public func getSession() async -> APISession {
 		await client.session
 	}
+	
+	public func getLog() async -> ClientLog {
+		await client.log
+	}
 }
 
 /// How Riot's API represents an error it encountered.
@@ -68,6 +72,7 @@ private final actor Client: Identifiable, Protoclient {
 	
 	let location: Location
 	let urlSession: URLSession
+	var log = ClientLog()
 	
 	nonisolated var baseURL: URL { fatalError() }
 	
@@ -148,7 +153,7 @@ private final actor Client: Identifiable, Protoclient {
 			waitingForSession = []
 		}
 		
-		// lol
+		// baby shark, do, do,
 		do {
 			do {
 				do {
@@ -171,18 +176,20 @@ private final actor Client: Identifiable, Protoclient {
 	}
 	
 	#if DEBUG
-	nonisolated func traceOutgoing<R>(_ rawRequest: URLRequest, for request: R) where R : Request {
+	func traceOutgoing<R>(_ rawRequest: URLRequest, for request: R) where R : Request {
 		print("\(request.path): sending \(rawRequest.httpMethod!) request to", rawRequest.url!)
 		print(String(data: rawRequest.httpBody ?? Data(), encoding: .utf8)!)
 	}
 	
-	nonisolated func traceIncoming<R>(_ response: Protoresponse, for request: R) where R : Request {
+	func traceIncoming<R: Request>(_ response: Protoresponse, for request: R, encodedAs rawRequest: URLRequest) where R : Request {
 		print("\(request.path): received response:")
 		if response.body.count < 1000 {
 			print((try? response.decodeString(using: .utf8)) ?? "<undecodable>")
 		} else {
 			print("<\(response.body.count) bytes>")
 		}
+		
+		log.logExchange(request: rawRequest, response: response)
 	}
 	#endif
 }
