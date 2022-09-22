@@ -13,7 +13,7 @@ final class ValorantAPITests: XCTestCase {
 	func testAuthentication() async throws {
 		try await testCommunication {
 			_ = try await APISession(
-				username: "username", password: "password",
+				credentials: .init(username: "username", password: "password"),
 				urlSessionOverride: makeSession(),
 				multifactorHandler: { _ in fatalError() }
 			)
@@ -35,7 +35,7 @@ final class ValorantAPITests: XCTestCase {
 	func testMultifactor() async throws {
 		try await testCommunication {
 			_ = try await APISession(
-				username: "username", password: "password",
+				credentials: .init(username: "username", password: "password"),
 				urlSessionOverride: makeSession(),
 				multifactorHandler: { info in
 					XCTAssertEqual(info, .init(version: "v2", codeLength: 6, method: "email", methods: ["email"], email: "jul**@****.com"))
@@ -211,14 +211,14 @@ final class ValorantAPITests: XCTestCase {
 	
 	func mockClient() -> ValorantClient {
 		.init(
-			location: .europe,
 			session: .init(
-				accessToken: .init(type: "Bearer", token: "ACCESS_TOKEN", expiration: .distantFuture),
+				credentials: .init(),
+				accessToken: .init(type: "Bearer", token: "ACCESS_TOKEN", idToken: "ID_TOKEN", expiration: .distantFuture),
 				entitlementsToken: "ENTITLEMENTS_TOKEN",
-				sessionID: "SESSION_ID",
-				tdid: "TDID"
+				cookies: [],
+				location: .europe,
+				userID: Self.playerID
 			),
-			userID: Self.playerID,
 			urlSessionOverride: verifyingURLSession()
 		)
 	}
