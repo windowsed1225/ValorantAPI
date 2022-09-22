@@ -50,7 +50,7 @@ struct Cookie: Codable, Hashable {
 struct AccessToken: Codable, Hashable {
 	var type: String
 	var token: String
-	var idToken: String = "" // TODO: temporarily defaulting since we don't need this for already-signed-in users and this maintains backwards compatibility with stored sessions
+	var idToken: String
 	var expiration: Date
 	
 	var encoded: String {
