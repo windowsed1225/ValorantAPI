@@ -175,23 +175,25 @@ private final actor Client: Identifiable, Protoclient {
 		}
 	}
 	
-	#if DEBUG
 	func traceOutgoing<R>(_ rawRequest: URLRequest, for request: R) where R : Request {
+#if DEBUG
 		print("\(request.path): sending \(rawRequest.httpMethod!) request to", rawRequest.url!)
 		print(String(data: rawRequest.httpBody ?? Data(), encoding: .utf8)!)
+#endif
 	}
 	
 	func traceIncoming<R: Request>(_ response: Protoresponse, for request: R, encodedAs rawRequest: URLRequest) where R : Request {
+#if DEBUG
 		print("\(request.path): received response:")
 		if response.body.count < 1000 {
 			print((try? response.decodeString(using: .utf8)) ?? "<undecodable>")
 		} else {
 			print("<\(response.body.count) bytes>")
 		}
+#endif
 		
 		log.logExchange(request: rawRequest, response: response)
 	}
-	#endif
 }
 
 private extension CodingUserInfoKey {
