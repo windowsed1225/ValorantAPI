@@ -54,10 +54,12 @@ struct StoreOffersRequest: GetJSONRequest {
 public struct Storefront: Codable {
 	public var featuredBundle: FeaturedBundle
 	public var skinsPanelLayout: SkinsPanelLayout
+	public var nightMarket: NightMarket?
 	
 	private enum CodingKeys: String, CodingKey {
 		case featuredBundle = "FeaturedBundle"
 		case skinsPanelLayout = "SkinsPanelLayout"
+		case nightMarket = "BonusStore"
 	}
 	
 	public struct FeaturedBundle: Codable {
@@ -75,6 +77,33 @@ public struct Storefront: Codable {
 		private enum CodingKeys: String, CodingKey {
 			case singleItemOffers = "SingleItemOffers"
 			case remainingDuration = "SingleItemOffersRemainingDurationInSeconds"
+		}
+	}
+	
+	public struct NightMarket: Codable {
+		public var offers: [Offer]
+		public var remainingDuration: TimeInterval
+		
+		private enum CodingKeys: String, CodingKey {
+			case offers = "BonusStoreOffers"
+			case remainingDuration = "BonusStoreRemainingDurationInSeconds"
+		}
+		
+		public struct Offer: Identifiable, Codable {
+			public var id: ObjectID<Self, LowercaseUUID>
+			public var offer: StoreOffer
+			public var discountPercent: Int
+			@StringKeyedDictionary
+			public var discountedCosts: [Currency.ID: Int]
+			public var isSeen: Bool
+			
+			private enum CodingKeys: String, CodingKey {
+				case id = "BonusOfferID"
+				case offer = "Offer"
+				case discountPercent = "DiscountPercent"
+				case discountedCosts = "DiscountCosts"
+				case isSeen = "IsSeen"
+			}
 		}
 	}
 }
