@@ -23,6 +23,10 @@ final actor AuthClient: Protoclient {
 		cookies.forEach(urlSession.configuration.httpCookieStorage!.setCookie(_:))
 	}
 	
+	func clearCookies() {
+		urlSession.configuration.httpCookieStorage!.removeCookies(since: .distantPast)
+	}
+	
 	let requestEncoder = JSONEncoder() <- {
 		$0.keyEncodingStrategy = .convertToSnakeCase
 	}

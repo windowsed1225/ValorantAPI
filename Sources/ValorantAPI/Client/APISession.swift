@@ -2,14 +2,14 @@ import Foundation
 import HandyOperators
 
 public struct APISession: Codable {
-	var credentials: Credentials
+	public let credentials: Credentials
 	var accessToken: AccessToken
 	var entitlementsToken: String
 	var cookies: [Cookie]
 	var location: Location
 	public let userID: User.ID
 	/// Set to true when the session realizes it has expired unrecoverably (requiring a credentials change or MFA input).
-	public private(set) var hasExpired = false
+	public internal(set) var hasExpired = false
 	
 #if DEBUG
 	/// A mocked session with bogus data, for testing.
@@ -24,26 +24,60 @@ public struct APISession: Codable {
 #endif
 }
 
-struct Cookie: Codable, Hashable {
-	var name: String
-	var value: String
-	var domain: String
-	var path: String
-	
-	init(_ httpCookie: HTTPCookie) {
-		name = httpCookie.name
-		value = httpCookie.value
-		domain = httpCookie.domain
-		path = httpCookie.path
+struct Cookie: Hashable {
+	var httpCookie: HTTPCookie
+	var name: String { httpCookie.name }
+}
+
+extension Cookie: Codable {
+	init(from decoder: Decoder) throws {
+		let container = try decoder.singleValueContainer()
+		
+		// backwards compatibility with existing cookies, for now
+		do {
+			let old = try container.decode(OldCookie.self)
+			self.httpCookie = old.httpCookie
+			return
+		} catch {}
+		
+		let raw = try container.decode(Data.self)
+		
+		guard let decoded = try NSKeyedUnarchiver.unarchivedObject(ofClasses: [HTTPCookie.self], from: raw) else {
+			throw DecodingError.dataCorruptedError(in: container, debugDescription: "invalid cookie data")
+		}
+		self.httpCookie = decoded as! HTTPCookie
 	}
 	
-	var httpCookie: HTTPCookie {
-		.init(properties: [
-			.name: name,
-			.value: value,
-			.domain: domain,
-			.path: path,
-		])!
+	func encode(to encoder: Encoder) throws {
+		var container = encoder.singleValueContainer()
+		let raw = try NSKeyedArchiver.archivedData(
+			withRootObject: httpCookie,
+			requiringSecureCoding: false
+		)
+		try container.encode(raw)
+	}
+	
+	private struct OldCookie: Codable, Hashable {
+		var name: String
+		var value: String
+		var domain: String
+		var path: String
+		
+		init(_ httpCookie: HTTPCookie) {
+			name = httpCookie.name
+			value = httpCookie.value
+			domain = httpCookie.domain
+			path = httpCookie.path
+		}
+		
+		var httpCookie: HTTPCookie {
+			.init(properties: [
+				.name: name,
+				.value: value,
+				.domain: domain,
+				.path: path,
+			])!
+		}
 	}
 }
 
@@ -74,8 +108,6 @@ extension APISession {
 		let client = await AuthClient(urlSessionOverride: urlSessionOverride)
 		if let other {
 			await client.setCookies(other.cookies.map(\.httpCookie))
-		} else {
-			try await client.establishSession()
 		}
 		
 		let accessToken = try await client.getAccessToken(
@@ -96,26 +128,14 @@ extension APISession {
 		self.cookies = await client.cookies().map(Cookie.init)
 	}
 	
-	mutating func refreshAccessToken() async throws {
+	mutating func refreshAccessToken(multifactorHandler: MultifactorHandler) async throws {
 		let client = await AuthClient()
 		await client.setCookies(cookies.map(\.httpCookie))
-		do {
-			if let token = try? await client.refreshAccessToken() {
-				accessToken = token
-			} else {
-				// try signing in again, with the same cookies
-				accessToken = try await client.getAccessToken(
-					credentials: credentials,
-					multifactorHandler: { _ in throw RefreshError.sessionExpired }
-				)
-			}
-		} catch {
-			hasExpired = true
-			throw RefreshError.sessionExpired
-		}
-	}
-	
-	enum RefreshError: Error {
-		case sessionExpired
+		accessToken = try await client.getAccessToken(
+			credentials: credentials,
+			multifactorHandler: multifactorHandler
+		)
+		
+		cookies = await client.cookies().map(Cookie.init)
 	}
 }

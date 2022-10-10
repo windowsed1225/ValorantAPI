@@ -3,19 +3,26 @@ import HandyOperators
 import Protoquest
 
 extension AuthClient {
-	func establishSession() async throws {
-		let response = try await send(CookiesRequest())
-		assert(response.type == .auth && response.error == nil)
-	}
-	
 	func getAccessToken(
 		credentials: Credentials,
 		multifactorHandler: MultifactorHandler
 	) async throws -> AccessToken {
-		let response = try await send(CredentialsAuthRequest(
-			username: credentials.username,
-			password: credentials.password
-		))
+		let cookiesResponse = try await send(CookiesRequest())
+		let response: AuthResponse
+		switch cookiesResponse.type {
+		case .auth:
+			if let error = cookiesResponse.error {
+				print("error establishing session; discarding cookies:", error)
+				clearCookies()
+			}
+			response = try await send(CredentialsAuthRequest(
+				username: credentials.username,
+				password: credentials.password
+			))
+		default:
+			response = cookiesResponse
+		}
+		
 		return try await handleAuthResponse(response, multifactorHandler: multifactorHandler)
 	}
 	
@@ -55,25 +62,15 @@ extension AuthClient {
 			return body.extractAccessToken()
 		}
 	}
-	
-	func refreshAccessToken() async throws -> AccessToken? {
-		let response = try await send(ReauthRequest())
-		print("response:", response)
-		let lastPart = response.components(separatedBy: " ").last!
-		guard !lastPart.starts(with: "/login") else { return nil } // session expired
-		let url = try URL(string: lastPart)
-		??? AuthHandlingError.missingRedirectURL(response: response)
-		return try url.extractAccessToken()
-		??? AuthHandlingError.invalidTokenURL(url)
-	}
 }
 
-enum AuthHandlingError: Error, LocalizedError {
+private enum AuthHandlingError: Error, LocalizedError {
 	case missingResponseBody
 	case invalidTokenURL(URL)
 	case unexpectedError(String?)
 	case missingRedirectURL(response: String)
 	case unknownRegion(String)
+	case sessionEstablishmentFailed(AuthResponse)
 	
 	var errorDescription: String? {
 		switch self {
@@ -87,6 +84,8 @@ enum AuthHandlingError: Error, LocalizedError {
 			return "[Auth] Missing Redirect URL: \(response)"
 		case .unknownRegion(let region):
 			return "[Auth] Unknown Region: \(region)"
+		case .sessionEstablishmentFailed(let response):
+			return "[Auth] Could not establish session: \(response)"
 		}
 	}
 }
@@ -197,19 +196,6 @@ public struct MultifactorInfo: Decodable, Hashable {
 		case codeLength = "multiFactorCodeLength"
 		case method, methods
 		case email
-	}
-}
-
-private struct ReauthRequest: GetStringRequest {
-	var path: String { "authorize" }
-	
-	var urlParams: [URLParameter] {
-		let base = CookiesRequest()
-		("client_id", base.clientID)
-		("response_type", base.responseType)
-		("redirect_uri", base.redirectURI)
-		("nonce", base.nonce)
-		("scope", base.scope)
 	}
 }
 

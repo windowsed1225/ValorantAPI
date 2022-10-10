@@ -22,9 +22,17 @@ public final class ValorantClient: Identifiable {
 	private let client: Client
 	private var sessionUpdateTokens: [AnyCancellable] = []
 	
-	public convenience init(session: APISession, urlSessionOverride: URLSession? = nil) {
+	public convenience init(
+		session: APISession,
+		urlSessionOverride: URLSession? = nil,
+		multifactorHandler: MultifactorHandler? = nil
+	) {
 		let userID = session.userID
-		let client = Client(session: session, urlSessionOverride: urlSessionOverride)
+		let client = Client(
+			session: session,
+			urlSessionOverride: urlSessionOverride,
+			multifactorHandler: multifactorHandler
+		)
 		self.init(client: client, userID: userID)
 	}
 	
@@ -73,11 +81,14 @@ private final actor Client: Identifiable, Protoclient {
 	let location: Location
 	let urlSession: URLSession
 	var log = ClientLog()
+	private let multifactorHandler: MultifactorHandler?
 	
 	nonisolated var baseURL: URL { fatalError() }
 	
 	private(set) var session: APISession {
-		didSet { sessionSubject.send(session) }
+		didSet {
+			sessionSubject.send(session)
+		}
 	}
 	let sessionSubject = PassthroughSubject<APISession, Never>()
 	
@@ -90,12 +101,14 @@ private final actor Client: Identifiable, Protoclient {
 	init(
 		session: APISession,
 		version: String? = nil,
-		urlSessionOverride: URLSession? = nil
+		urlSessionOverride: URLSession? = nil,
+		multifactorHandler: MultifactorHandler? = nil
 	) {
 		self.location = session.location
 		self.session = session
 		self.clientVersion = version
 		self.urlSession = urlSessionOverride ?? .init(configuration: .ephemeral)
+		self.multifactorHandler = multifactorHandler
 	}
 	
 	private static let encodedPlatformInfo = try! JSONEncoder()
@@ -153,14 +166,15 @@ private final actor Client: Identifiable, Protoclient {
 			waitingForSession = []
 		}
 		
-		// baby shark, do, do,
 		do {
 			do {
-				do {
-					// for some reason swift forbids in-place mutation for isolated properties
-					session = try await session <- { try await $0.refreshAccessToken() }
-				} catch APISession.RefreshError.sessionExpired {
-					throw APIError.sessionExpired
+				// swift forbids in-place mutation for isolated properties
+				session = try await session <- {
+					try await $0.refreshAccessToken(
+						multifactorHandler: multifactorHandler ?? { _ in
+							throw APIError.sessionExpired
+						}
+					)
 				}
 				
 				waitingForSession.forEach { $0.resume() }
@@ -169,6 +183,7 @@ private final actor Client: Identifiable, Protoclient {
 				throw error
 			}
 		} catch APIError.sessionExpired {
+			session.hasExpired = true
 			throw APIError.sessionExpired
 		} catch {
 			throw APIError.sessionResumptionFailure(error)
