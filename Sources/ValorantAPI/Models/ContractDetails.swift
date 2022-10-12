@@ -68,6 +68,10 @@ public struct Contract: Codable, Identifiable {
 	}
 }
 
+public extension Contract.ID {
+	static let freeAgents = Self("a3dd5293-4b3d-46de-a6d7-4493f0530d9b")!
+}
+
 public struct Mission: Codable, Identifiable {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 	public var id: ID
