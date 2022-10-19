@@ -6,12 +6,12 @@ public struct ClientLog {
 	public let maxCount: Int
 	public private(set) var exchanges: Deque<Exchange> = []
 	
-	public init(maxCount: Int = 20) {
+	public init(maxCount: Int = 50) {
 		self.maxCount = maxCount
 	}
 	
 	public mutating func logExchange(request: URLRequest, response: Protoresponse) {
-		if exchanges.count >= maxCount - 1 {
+		if exchanges.count >= maxCount {
 			exchanges.removeFirst()
 		}
 		exchanges.append(.init(request: request, response: response))
