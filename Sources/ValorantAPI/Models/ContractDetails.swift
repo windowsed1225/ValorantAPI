@@ -59,11 +59,21 @@ public struct Contract: Codable, Identifiable {
 	public struct Progression: Codable {
 		public var totalEarned: Int
 		@StringKeyedDictionary
-		public var highestRewardedLevel: [LowercaseUUID: Int]
+		public var highestRewardedLevel: [LowercaseUUID: RewardedLevel]
 		
 		private enum CodingKeys: String, CodingKey {
 			case totalEarned = "TotalProgressionEarned"
 			case highestRewardedLevel = "HighestRewardedLevel"
+		}
+		
+		public struct RewardedLevel: Codable {
+			public var amount: Int
+			public var version: Int
+			
+			private enum CodingKeys: String, CodingKey {
+				case amount = "Amount"
+				case version = "Version"
+			}
 		}
 	}
 }

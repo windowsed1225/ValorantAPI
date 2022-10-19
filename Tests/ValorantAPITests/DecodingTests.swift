@@ -29,7 +29,7 @@ final class DecodingTests: XCTestCase {
 	func testDecodingContracts() throws {
 		let details = try decode(ContractDetails.self, fromJSONNamed: "contracts")
 		//dump(details)
-		XCTAssertEqual(details.contracts.count, 23)
+		XCTAssertEqual(details.contracts.count, 40)
 	}
 	
 	func testDecodingLivePregameInfo() throws {
