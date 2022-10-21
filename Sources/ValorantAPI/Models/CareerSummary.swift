@@ -11,6 +11,13 @@ public struct CareerSummary: Codable, Identifiable {
 	public var isAnonymizedOnLeaderboard: Bool
 	public var isActRankBadgeHidden: Bool
 	
+	public func peakRank() -> RankSnapshot? {
+		infoByQueue[.competitive]?.bySeason?.values
+			.lazy
+			.compactMap { $0.peakRank() }
+			.max()
+	}
+	
 	public var id: User.ID { userID }
 	
 	public var competitiveInfo: QueueInfo? {
@@ -73,8 +80,6 @@ public struct CareerSummary: Codable, Identifiable {
 		public var winCountIncludingPlacements: Int
 		public var gameCount: Int
 		public var actRank: Int
-		/// - Note: Seems to always be 0.
-		public var capstoneWins: Int
 		public var leaderboardRank: Int
 		public var competitiveTier: Int
 		public var rankedRating: Int
@@ -90,16 +95,20 @@ public struct CareerSummary: Codable, Identifiable {
 			return rankedRating > adjustment ? rankedRating - adjustment : rankedRating
 		}
 		
+		public func peakRank() -> RankSnapshot? {
+			let peak = max(competitiveTier, winsByTier?.keys.max() ?? 0)
+			return peak > 0 ? .init(season: seasonID, rank: peak) : nil
+		}
+		
 		public init(
 			seasonID: Season.ID,
 			winCount: Int = 0,
 			winCountIncludingPlacements: Int = 0,
 			gameCount: Int = 0,
-			actRank: Int,
-			capstoneWins: Int = 0,
+			actRank: Int = 0,
 			leaderboardRank: Int = 0,
-			competitiveTier: Int,
-			rankedRating: Int,
+			competitiveTier: Int = 0,
+			rankedRating: Int = 0,
 			winsByTier: [Int : Int]? = nil,
 			gamesNeededForRating: Int = 0,
 			totalWinsNeededForRank: Int = 0
@@ -109,7 +118,6 @@ public struct CareerSummary: Codable, Identifiable {
 			self.winCountIncludingPlacements = winCountIncludingPlacements
 			self.gameCount = gameCount
 			self.actRank = actRank
-			self.capstoneWins = capstoneWins
 			self.leaderboardRank = leaderboardRank
 			self.competitiveTier = competitiveTier
 			self.rankedRating = rankedRating
@@ -124,7 +132,6 @@ public struct CareerSummary: Codable, Identifiable {
 			case winCountIncludingPlacements = "NumberOfWinsWithPlacements"
 			case gameCount = "NumberOfGames"
 			case actRank = "Rank"
-			case capstoneWins = "CapstoneWins"
 			case leaderboardRank = "LeaderboardRank"
 			case competitiveTier = "CompetitiveTier"
 			case rankedRating = "RankedRating"
@@ -132,5 +139,22 @@ public struct CareerSummary: Codable, Identifiable {
 			case gamesNeededForRating = "GamesNeededForRating"
 			case totalWinsNeededForRank = "TotalWinsNeededForRank"
 		}
+	}
+}
+
+public struct RankSnapshot: Comparable {
+	public var season: Season.ID
+	public var rank: Int
+	
+	public var isUnranked: Bool {
+		rank == 0
+	}
+	
+	public static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.rank == rhs.rank
+	}
+	
+	public static func < (lhs: Self, rhs: Self) -> Bool {
+		lhs.rank < rhs.rank
 	}
 }
