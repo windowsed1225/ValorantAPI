@@ -1,8 +1,10 @@
 import Foundation
+import ErgonomicCodable
 
 public struct CompetitiveUpdate: Codable, Identifiable {
 	public var id: Match.ID
-	public var mapID: MapID
+	@SpecialOptional(.emptyString)
+	public var mapID: MapID?
 	public var startTime: Date
 	public var tierBeforeUpdate: Int
 	public var tierAfterUpdate: Int
@@ -13,6 +15,7 @@ public struct CompetitiveUpdate: Codable, Identifiable {
 	public var afkPenalty: Int
 	
 	public var isRanked: Bool { tierAfterUpdate != 0 }
+	public var isDodge: Bool { mapID == nil }
 	
 	public var eloChange: Int { eloAfterUpdate - eloBeforeUpdate }
 	public var eloBeforeUpdate: Int { tierBeforeUpdate * 100 + tierProgressBeforeUpdate }
@@ -20,18 +23,18 @@ public struct CompetitiveUpdate: Codable, Identifiable {
 	
 	public init(
 		id: Match.ID,
-		mapID: MapID,
+		mapID: MapID?,
 		startTime: Date,
 		tierBeforeUpdate: Int,
 		tierAfterUpdate: Int,
 		tierProgressBeforeUpdate: Int,
 		tierProgressAfterUpdate: Int,
 		ratingEarned: Int,
-		performanceBonus: Int,
-		afkPenalty: Int
+		performanceBonus: Int = 0,
+		afkPenalty: Int = 0
 	) {
 		self.id = id
-		self.mapID = mapID
+		self._mapID = .init(wrappedValue: mapID)
 		self.startTime = startTime
 		self.tierBeforeUpdate = tierBeforeUpdate
 		self.tierAfterUpdate = tierAfterUpdate
