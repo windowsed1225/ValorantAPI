@@ -7,7 +7,7 @@ extension ValorantClient {
 	}
 }
 
-private struct CareerSummaryRequest: GetJSONRequest {
+private struct CareerSummaryRequest: GetJSONRequest, GameDataRequest {
 	var userID: Player.ID
 	
 	var path: String {

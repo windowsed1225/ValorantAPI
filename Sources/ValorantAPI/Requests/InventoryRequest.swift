@@ -8,7 +8,7 @@ extension ValorantClient {
 	}
 }
 
-private struct InventoryRequest: GetJSONRequest {
+private struct InventoryRequest: GetJSONRequest, GameDataRequest {
 	var playerID: Player.ID
 	
 	var path: String {

@@ -16,7 +16,7 @@ extension ValorantClient {
 	}
 }
 
-private struct StorefrontRequest: GetJSONRequest {
+private struct StorefrontRequest: GetJSONRequest, GameDataRequest {
 	var playerID: Player.ID
 	
 	var path: String {
@@ -26,7 +26,7 @@ private struct StorefrontRequest: GetJSONRequest {
 	typealias Response = Storefront
 }
 
-private struct StoreWalletRequest: GetJSONRequest {
+private struct StoreWalletRequest: GetJSONRequest, GameDataRequest {
 	var playerID: Player.ID
 	
 	var path: String {
@@ -36,7 +36,7 @@ private struct StoreWalletRequest: GetJSONRequest {
 	typealias Response = StoreWallet
 }
 
-struct StoreOffersRequest: GetJSONRequest {
+struct StoreOffersRequest: GetJSONRequest, GameDataRequest {
 	var path: String {
 		"/store/v1/offers/"
 	}

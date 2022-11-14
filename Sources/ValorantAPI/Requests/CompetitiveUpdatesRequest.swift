@@ -18,14 +18,14 @@ extension ValorantClient {
 				startIndex: startIndex, endIndex: endIndex ?? (startIndex + 20),
 				queue: queue
 			)).matches
-		} catch ValorantClient.APIError.badResponseCode(400, _, let riotError?)
+		} catch APIError.badResponseCode(400, _, let riotError?)
 					where riotError.errorCode == "BAD_PARAMETER" {
 			return [] // probably just no matches this far back yet
 		}
 	}
 }
 
-private struct CompetitiveUpdatesRequest: GetJSONRequest {
+private struct CompetitiveUpdatesRequest: GetJSONRequest, GameDataRequest {
 	var userID: Player.ID
 	var startIndex = 0
 	var endIndex = 20

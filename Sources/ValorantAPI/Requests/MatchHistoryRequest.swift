@@ -17,7 +17,7 @@ extension ValorantClient {
 	}
 }
 
-private struct MatchHistoryRequest: GetJSONRequest {
+private struct MatchHistoryRequest: GetJSONRequest, GameDataRequest {
 	var userID: Player.ID
 	var startIndex = 0
 	var endIndex = 20

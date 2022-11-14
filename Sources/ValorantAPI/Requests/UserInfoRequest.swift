@@ -7,7 +7,7 @@ extension ValorantClient {
 	}
 }
 
-private struct UserInfoRequest: JSONJSONRequest {
+private struct UserInfoRequest: JSONJSONRequest, GameDataRequest {
 	var httpMethod: String { "PUT" }
 	
 	var path: String { "name-service/v2/players" }

@@ -102,7 +102,7 @@ public struct AuthenticationError: LocalizedError {
 	}
 }
 
-private struct CookiesRequest: JSONJSONRequest, Encodable {
+private struct CookiesRequest: JSONJSONRequest, Encodable, AuthRequest {
 	typealias Response = AuthResponse
 	
 	var path: String { "api/v1/authorization" }
@@ -114,23 +114,23 @@ private struct CookiesRequest: JSONJSONRequest, Encodable {
 	let scope = "account openid"
 }
 
-private protocol AuthRequest: JSONJSONRequest, Encodable
+private protocol AuthMessage: JSONJSONRequest, Encodable, AuthRequest
 where Response == AuthResponse {
 	var type: AuthMessageType { get }
 }
 
-extension AuthRequest {
+extension AuthMessage {
 	var httpMethod: String { "PUT" }
 	var path: String { "api/v1/authorization" }
 }
 
-private struct CredentialsAuthRequest: AuthRequest {
+private struct CredentialsAuthRequest: AuthMessage {
 	let type = AuthMessageType.auth
 	let username, password: String
 	var remember = true
 }
 
-private struct MultifactorAuthRequest: AuthRequest {
+private struct MultifactorAuthRequest: AuthMessage {
 	var encoderOverride: JSONEncoder? { .init() } // no snake case conversion for this for some reason lol
 	
 	let type = AuthMessageType.multifactor
@@ -199,7 +199,7 @@ public struct MultifactorInfo: Decodable, Hashable {
 	}
 }
 
-private struct UserInfoRequest: GetJSONRequest {
+private struct UserInfoRequest: GetJSONRequest, AuthRequest {
 	var path: String { "userinfo" }
 	
 	struct Response: Decodable {
@@ -207,7 +207,7 @@ private struct UserInfoRequest: GetJSONRequest {
 	}
 }
 
-private struct PASRequest: JSONJSONRequest, Encodable {
+private struct PASRequest: JSONJSONRequest, Encodable, AuthRequest {
 	var baseURLOverride: URL? {
 		.init(string: "https://riot-geo.pas.si.riotgames.com")!
 	}

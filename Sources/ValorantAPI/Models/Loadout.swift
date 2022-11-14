@@ -10,7 +10,7 @@ extension ValorantClient {
 		try await send(LoadoutUpdateRequest(playerID: userID, loadout: loadout))
 	}
 	
-	struct LoadoutRequest: GetJSONRequest {
+	struct LoadoutRequest: GetJSONRequest, GameDataRequest {
 		var playerID: Player.ID
 		
 		var path: String {
@@ -20,7 +20,7 @@ extension ValorantClient {
 		typealias Response = Loadout
 	}
 	
-	struct LoadoutUpdateRequest: JSONJSONRequest {
+	struct LoadoutUpdateRequest: JSONJSONRequest, GameDataRequest {
 		var playerID: Player.ID
 		var loadout: Loadout
 		

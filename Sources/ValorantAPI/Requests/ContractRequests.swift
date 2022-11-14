@@ -12,7 +12,7 @@ extension ValorantClient {
 	}
 }
 
-private struct ContractDetailsRequest: GetJSONRequest {
+private struct ContractDetailsRequest: GetJSONRequest, GameDataRequest {
 	var playerID: Player.ID
 	
 	var path: String {
@@ -22,7 +22,7 @@ private struct ContractDetailsRequest: GetJSONRequest {
 	typealias Response = ContractDetails
 }
 
-private struct ActivateContractRequest: GetRequest, StatusCodeRequest {
+private struct ActivateContractRequest: GetRequest, StatusCodeRequest, GameDataRequest {
 	var httpMethod: String { "POST" }
 	
 	var playerID: Player.ID

@@ -9,6 +9,7 @@ struct HeaderNames {
 	fileprivate init() {}
 }
 
+// TODO: I really like this approach and would love to move it into Protoquest, maybe even with enums?
 extension URLRequest {
 	var headers: Headers {
 		get { .init(request: self) }

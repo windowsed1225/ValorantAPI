@@ -105,9 +105,9 @@ extension APISession {
 	) async throws {
 		self.credentials = credentials
 		
-		let client = await AuthClient(urlSessionOverride: urlSessionOverride)
+		var client = await AuthClient(urlSessionOverride: urlSessionOverride)
 		if let other {
-			await client.setCookies(other.cookies.map(\.httpCookie))
+			client.setCookies(other.cookies.map(\.httpCookie))
 		}
 		
 		let accessToken = try await client.getAccessToken(
@@ -115,27 +115,28 @@ extension APISession {
 			multifactorHandler: multifactorHandler
 		)
 		self.accessToken = accessToken
-		await client.setAccessToken(accessToken)
+		client.accessToken = accessToken
 		
 		// parallelization!
-		async let entitlement = client.getEntitlementsToken()
-		async let userID = client.getUserID()
-		async let location = client.getLocation(using: accessToken)
+		let constClient = client // can't capture vars in concurrent code, even if we don't mutate them during it
+		async let entitlement = constClient.getEntitlementsToken()
+		async let userID = constClient.getUserID()
+		async let location = constClient.getLocation(using: accessToken)
 		self.entitlementsToken = try await entitlement
 		self.userID = try await userID
 		self.location = try await location
 		
-		self.cookies = await client.cookies().map(Cookie.init)
+		self.cookies = client.cookies().map(Cookie.init)
 	}
 	
 	mutating func refreshAccessToken(multifactorHandler: MultifactorHandler) async throws {
 		let client = await AuthClient()
-		await client.setCookies(cookies.map(\.httpCookie))
+		client.setCookies(cookies.map(\.httpCookie))
 		accessToken = try await client.getAccessToken(
 			credentials: credentials,
 			multifactorHandler: multifactorHandler
 		)
 		
-		cookies = await client.cookies().map(Cookie.init)
+		cookies = client.cookies().map(Cookie.init)
 	}
 }

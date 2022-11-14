@@ -7,7 +7,7 @@ extension ValorantClient {
 	}
 }
 
-private struct MatchDetailsRequest: GetJSONRequest {
+private struct MatchDetailsRequest: GetJSONRequest, GameDataRequest {
 	var matchID: Match.ID
 	
 	var path: String {

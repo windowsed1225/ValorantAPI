@@ -93,4 +93,10 @@ private struct PickAgentRequest: GetJSONRequest, LiveGameRequest {
 }
 
 /// marks requests as needing a different base URL
-protocol LiveGameRequest: Request {}
+protocol LiveGameRequest: ValorantRequest {}
+
+extension LiveGameRequest {
+	func baseURL(for location: Location) -> URL {
+		BaseURLs.liveGameAPI(location: location)
+	}
+}

@@ -7,7 +7,7 @@ extension AuthClient {
 	}
 }
 
-private struct EntitlementsTokenRequest: JSONJSONRequest, Encodable {
+private struct EntitlementsTokenRequest: JSONJSONRequest, Encodable, AuthRequest {
 	var baseURLOverride: URL? { BaseURLs.entitlementsAPI }
 	var path: String { "token/v1" }
 	
