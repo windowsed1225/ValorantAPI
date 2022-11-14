@@ -6,7 +6,7 @@ public struct APISession: Codable {
 	var accessToken: AccessToken
 	var entitlementsToken: String
 	var cookies: [Cookie]
-	var location: Location
+	public let location: Location
 	public let userID: User.ID
 	/// Set to true when the session realizes it has expired unrecoverably (requiring a credentials change or MFA input).
 	public internal(set) var hasExpired = false

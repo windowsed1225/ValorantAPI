@@ -81,9 +81,15 @@ public struct ValorantClient {
 	}
 	
 	/// Creates a different version of this client for making requests in ``location``.
+	///
 	/// This is a cheap operation; the heavyweight objects are reference types and shared with the new instance.
-	public func `in`(_ location: Location) -> Self {
-		self <- { $0.location = location }
+	/// If ``location`` is `nil`, this just returns `self`.
+	public func `in`(_ location: Location?) -> Self {
+		if let location {
+			return self <- { $0.location = location }
+		} else {
+			return self
+		}
 	}
 }
 
