@@ -18,6 +18,8 @@ final class DecodingTests: XCTestCase {
 		let details = try decode(MatchDetails.self, fromJSONNamed: "match")
 		//dump(details)
 		XCTAssertEqual(details.players.count, 10)
+		
+		_ = try decode(MatchDetails.self, fromJSONNamed: "custom_with_spectators")
 	}
 	
 	func testDecodingDeathmatch() throws {

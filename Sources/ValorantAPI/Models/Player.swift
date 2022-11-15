@@ -8,12 +8,15 @@ public struct Player: Codable, Identifiable {
 	public var playerCardID: PlayerCard.ID
 	public var playerTitleID: PlayerTitle.ID
 	
+	/// Is `.neutral` for spectators in custom games.
 	public var teamID: Team.ID
 	public var partyID: Party.ID
-	public var agentID: Agent.ID
+	/// Is `nil` for spectators in custom games.
+	public var agentID: Agent.ID?
 	public var competitiveTier: Int
 	
-	public var stats: Stats
+	/// Is `nil` for spectators in custom games.
+	public var stats: Stats?
 	public var damageDealtByRound: [DamageDealt]?
 	
 	/// May be `nil` for older matches before this was introduced.
@@ -33,6 +36,10 @@ public struct Player: Codable, Identifiable {
 			accountLevel: accountLevel ?? 0,
 			isIncognito: false
 		)
+	}
+	
+	public var score: Int {
+		stats?.score ?? 0
 	}
 	
 	private enum CodingKeys: String, CodingKey {

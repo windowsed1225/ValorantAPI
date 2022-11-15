@@ -81,6 +81,12 @@ public struct Team: Codable {
 	}
 }
 
+public extension Team.ID {
+	static let blue = Self("Blue")
+	static let red = Self("Red")
+	static let neutral = Self("Neutral")
+}
+
 public struct RoundResult: Codable {
 	public var number: Int
 	
