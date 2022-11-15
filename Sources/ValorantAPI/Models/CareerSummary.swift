@@ -11,13 +11,6 @@ public struct CareerSummary: Codable, Identifiable {
 	public var isAnonymizedOnLeaderboard: Bool
 	public var isActRankBadgeHidden: Bool
 	
-	public func peakRank() -> RankSnapshot? {
-		infoByQueue[.competitive]?.bySeason?.values
-			.lazy
-			.compactMap { $0.peakRank() }
-			.max()
-	}
-	
 	public var id: User.ID { userID }
 	
 	public var competitiveInfo: QueueInfo? {
@@ -145,16 +138,28 @@ public struct CareerSummary: Codable, Identifiable {
 public struct RankSnapshot: Comparable {
 	public var season: Season.ID
 	public var rank: Int
+	/// The rank, adjusted so immortal to radiant match before and after the introduction of the ascendant rank.
+	public var adjustedRank: Int
+	
+	public init(season: Season.ID, rank: Int) {
+		self.season = season
+		self.rank = rank
+		self.adjustedRank = rank
+		
+		if rank > 20, season.wasBeforeAscendantRank {
+			adjustedRank += 3
+		}
+	}
 	
 	public var isUnranked: Bool {
 		rank == 0
 	}
 	
 	public static func == (lhs: Self, rhs: Self) -> Bool {
-		lhs.rank == rhs.rank
+		lhs.adjustedRank == rhs.adjustedRank
 	}
 	
 	public static func < (lhs: Self, rhs: Self) -> Bool {
-		lhs.rank < rhs.rank
+		lhs.adjustedRank < rhs.adjustedRank
 	}
 }
