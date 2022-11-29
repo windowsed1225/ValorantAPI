@@ -14,6 +14,7 @@ extension AuthClient {
 			if let error = cookiesResponse.error {
 				print("error establishing session; discarding cookies:", error)
 				clearCookies()
+				_ = try await send(CookiesRequest())
 			}
 			response = try await send(CredentialsAuthRequest(
 				username: credentials.username,
