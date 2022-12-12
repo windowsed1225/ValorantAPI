@@ -226,6 +226,17 @@ public struct Kill: Codable {
 		public var source: String
 		public var wasInSecondaryFireMode: Bool
 		
+		private static let abilityAliases: [String: String] = [
+			// riot changed this at some point…
+			"GrenadeAbility": "Grenade",
+			"Primary": "Grenade",
+		]
+		
+		/// if this damage was dealt using an ability, this takes care of remapping riot's ever-changing aliases to the ability slot names
+		public var remappedAbilitySlot: String {
+			Self.abilityAliases[source] ?? source
+		}
+		
 		private enum CodingKeys: String, CodingKey {
 			case type = "damageType"
 			case source = "damageItem"
