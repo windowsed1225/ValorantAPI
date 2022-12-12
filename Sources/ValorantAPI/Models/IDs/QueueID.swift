@@ -20,6 +20,7 @@ public struct QueueID: SimpleRawWrapper, LosslessStringConvertible {
 	public static let escalation = Self("ggteam")
 	public static let snowballFight = Self("snowball")
 	public static let replication = Self("onefa")
+	public static let swiftplay = Self("swiftplay")
 	public static let custom = Self("custom")
 	
 	public var rawValue: String

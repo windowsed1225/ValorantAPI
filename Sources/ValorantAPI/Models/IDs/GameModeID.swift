@@ -2,16 +2,17 @@ import Foundation
 
 public enum GameMode {
 	public struct ID: SimpleRawWrapper {
-		public static let standard = Self("GameModes/Bomb/BombGameMode")
-		public static let spikeRush = Self("GameModes/QuickBomb/QuickBombGameMode")
-		public static let deathmatch = Self("GameModes/Deathmatch/DeathmatchGameMode")
+		public static let standard = Self("Bomb")
+		public static let spikeRush = Self("QuickBomb")
+		public static let deathmatch = Self("Deathmatch")
 		
-		public static let snowballFight = Self("GameModes/SnowballFight/SnowballFightGameMode")
-		public static let escalation = Self("GameModes/GunGame/GunGameTeamsGameMode")
-		public static let replication = Self("GameModes/OneForAll/OneForAll_GameMode")
+		public static let snowballFight = Self("SnowballFight")
+		public static let escalation = Self("GunGame")
+		public static let replication = Self("OneForAll")
+		public static let swiftplay = Self("_Development/Swiftplay_EndOfRoundCredits")
 		
-		public static let onboarding = Self("GameModes/NewPlayerExperience/NPEGameMode")
-		public static let practice = Self("GameModes/ShootingRange/ShootingRangeGameMode")
+		public static let onboarding = Self("NewPlayerExperience")
+		public static let practice = Self("ShootingRange")
 		
 		public var rawValue: String
 		
@@ -24,15 +25,22 @@ public enum GameMode {
 			let decoded = try container.decode(String.self)
 			// e.g. "Game/GameModes/Bomb/BombGameMode.BombGameMode_C"
 			
-			let pathPrefix = "/Game/"
-			guard decoded.hasPrefix(pathPrefix) else { self.init(decoded); return }
-			let trimmed = decoded.dropFirst(pathPrefix.count)
-			// e.g. "GameModes/Bomb/BombGameMode.BombGameMode_C"
+			let pathPrefix = "/Game/GameModes/"
+			let oldPathPrefix = "GameModes/" // migrate previously-decoded IDs to the new format
+			let trimmed: Substring
+			if decoded.hasPrefix(oldPathPrefix) {
+				trimmed = decoded.dropFirst(oldPathPrefix.count)
+			} else if decoded.hasPrefix(pathPrefix) {
+				trimmed = decoded.dropFirst(pathPrefix.count)
+			} else {
+				self.init(decoded)
+				return
+			}
+			// e.g. "Bomb/BombGameMode.BombGameMode_C"
 			
-			let parts = trimmed.split(separator: ".")
-			assert(parts.count == 2)
-			self.init(String(parts.first!))
-			// e.g. "GameModes/Bomb/BombGameMode"
+			let lastSeparator = trimmed.lastIndex(of: "/")!
+			self.init(String(trimmed.prefix(upTo: lastSeparator)))
+			// e.g. "Bomb"
 		}
 	}
 }
