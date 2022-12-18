@@ -10,6 +10,7 @@ public struct QueueID: SimpleRawWrapper, LosslessStringConvertible {
 		.escalation,
 		.snowballFight,
 		.replication,
+		.swiftplay,
 		.custom,
 	]
 	
