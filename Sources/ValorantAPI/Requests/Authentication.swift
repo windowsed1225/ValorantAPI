@@ -4,13 +4,16 @@ import Protoquest
 
 extension AuthClient {
 	func getAccessToken(
-		credentials: Credentials,
-		multifactorHandler: MultifactorHandler
+		loginBehavior: LoginBehavior
 	) async throws -> AccessToken {
 		let cookiesResponse = try await send(CookiesRequest())
 		let response: AuthResponse
 		switch cookiesResponse.type {
 		case .auth:
+			guard case .allow(let credentials, _) = loginBehavior else {
+				throw APIError.sessionExpired
+			}
+			
 			if let error = cookiesResponse.error {
 				print("error establishing session; discarding cookies:", error)
 				clearCookies()
@@ -24,7 +27,7 @@ extension AuthClient {
 			response = cookiesResponse
 		}
 		
-		return try await handleAuthResponse(response, multifactorHandler: multifactorHandler)
+		return try await handleAuthResponse(response, loginBehavior: loginBehavior)
 	}
 	
 	func getUserID() async throws -> User.ID {
@@ -40,7 +43,7 @@ extension AuthClient {
 	
 	private func handleAuthResponse(
 		_ response: AuthResponse,
-		multifactorHandler: MultifactorHandler
+		loginBehavior: LoginBehavior
 	) async throws -> AccessToken {
 		switch response.type {
 		case .auth:
@@ -48,6 +51,9 @@ extension AuthClient {
 		case .error:
 			throw AuthHandlingError.unexpectedError(response.error)
 		case .multifactor:
+			guard case .allow(_, let multifactorHandler) = loginBehavior else {
+				throw APIError.sessionExpired
+			}
 			// error is "multifactor_attempt_failed" if incorrect code given
 			guard let info = response.multifactor
 			else { throw AuthHandlingError.missingResponseBody }
@@ -55,13 +61,19 @@ extension AuthClient {
 			let newResponse = try await send(MultifactorAuthRequest(
 				code: code, rememberDevice: true
 			))
-			return try await handleAuthResponse(newResponse, multifactorHandler: multifactorHandler)
+			return try await handleAuthResponse(newResponse, loginBehavior: loginBehavior)
 		case .response:
 			assert(response.error == nil)
 			guard let body = response.response
 			else { throw AuthHandlingError.missingResponseBody }
 			return body.extractAccessToken()
 		}
+	}
+	
+	/// specifies how to behave in case there is no valid session and a login is required
+	enum LoginBehavior {
+		case disallow // only allow resumption
+		case allow(Credentials, MultifactorHandler)
 	}
 }
 
