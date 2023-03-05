@@ -85,7 +85,7 @@ public struct CareerSummary: Codable, Identifiable {
 		public var adjustedRankedRating: Int {
 			let adjustment = seasonID == .episode1Act3 ? (100 * competitiveTier) : 0
 			// then again, sometimes it seems the numbers weren't absolute (maybe for 0 rr?), so let's avoid negative numbers lol
-			return rankedRating > adjustment ? rankedRating - adjustment : rankedRating
+			return rankedRating >= adjustment ? rankedRating - adjustment : rankedRating
 		}
 		
 		public func peakRank() -> RankSnapshot? {
