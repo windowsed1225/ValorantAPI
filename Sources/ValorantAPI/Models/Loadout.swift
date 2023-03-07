@@ -18,6 +18,20 @@ extension ValorantClient {
 		}
 		
 		typealias Response = Loadout
+		
+		func decodeResponse(from raw: Protoresponse) throws -> Loadout {
+			do {
+				return try raw.decodeJSON()
+			} catch {
+				if
+					let string = try? raw.decodeString(using: .utf8),
+					string.contains("00000000-0000-0000-0000-000000000000")
+				{
+					throw Loadout.FetchError.uninitialized(playerID)
+				}
+				throw error
+			}
+		}
 	}
 	
 	struct LoadoutUpdateRequest: JSONJSONRequest, GameDataRequest {
@@ -32,6 +46,21 @@ extension ValorantClient {
 		}
 		
 		typealias Response = Loadout
+	}
+}
+
+extension Loadout {
+	public enum FetchError: Error, LocalizedError {
+		/// Thrown for loadouts initialized to the default zeroed-out UUIDs and missing properties.
+		/// If you get this, you've likely signed into the wrong account (or somehow fetched data for the wrong region).
+		case uninitialized(Player.ID)
+		
+		public var errorDescription: String? {
+			switch self {
+			case .uninitialized:
+				return "It looks like this account has never played Valorant in this region!"
+			}
+		}
 	}
 }
 
