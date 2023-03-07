@@ -11,16 +11,11 @@ final actor SessionHandler {
 	}
 	let sessionSubject = PassthroughSubject<APISession, Never>()
 	
-	private let multifactorHandler: MultifactorHandler?
 	private var isResumingSession = false
 	private var waitingForSession: [CheckedContinuation<Void, Error>] = []
 	
-	init(
-		session: APISession,
-		multifactorHandler: MultifactorHandler? = nil
-	) {
+	init(session: APISession) {
 		self.session = session
-		self.multifactorHandler = multifactorHandler
 	}
 	
 	func getAccessToken() async throws -> AccessToken {
@@ -53,12 +48,7 @@ final actor SessionHandler {
 		do {
 			do {
 				session = try await session <- {
-					try await $0.refreshAccessToken(
-						multifactorHandler: multifactorHandler ?? { _ in
-							self.session.hasExpired = true
-							throw APIError.sessionExpired
-						}
-					)
+					try await $0.refreshAccessToken()
 				}
 				
 				waitingForSession.forEach { $0.resume() }

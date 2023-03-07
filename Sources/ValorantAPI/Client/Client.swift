@@ -27,13 +27,12 @@ public struct ValorantClient {
 	
 	public init(
 		session: APISession,
-		urlSessionOverride: URLSession? = nil,
-		multifactorHandler: MultifactorHandler? = nil
+		urlSessionOverride: URLSession? = nil
 	) {
 		self.userID = session.userID
 		self.location = session.location
 		
-		self.sessionHandler = .init(session: session, multifactorHandler: multifactorHandler)
+		self.sessionHandler = .init(session: session)
 		
 		self.clientStack = Protolayer
 			.urlSession(urlSessionOverride ?? .init(configuration: .ephemeral))
