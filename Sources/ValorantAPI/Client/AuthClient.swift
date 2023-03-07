@@ -48,6 +48,18 @@ extension JSONEncodingRequest where Self: AuthRequest {
 
 extension JSONDecodingRequest where Self: AuthRequest {
 	var decoderOverride: JSONDecoder? { responseDecoder }
+	
+	func decodeResponse(from raw: Protoresponse) throws -> Response {
+		do {
+			return try raw.decodeJSON(using: responseDecoder)
+		} catch {
+			if raw.httpMetadata!.statusCode == 403 {
+				throw AuthDecodingError.accessDenied
+			} else {
+				throw error
+			}
+		}
+	}
 }
 
 private let requestEncoder = JSONEncoder() <- {
@@ -55,4 +67,12 @@ private let requestEncoder = JSONEncoder() <- {
 }
 private let responseDecoder = JSONDecoder() <- {
 	$0.keyDecodingStrategy = .convertFromSnakeCase
+}
+
+private enum AuthDecodingError: Error, LocalizedError {
+	case accessDenied
+	
+	var errorDescription: String? {
+		"The authentication servers could not be reached! Are you using a VPN or cellular data?"
+	}
 }
