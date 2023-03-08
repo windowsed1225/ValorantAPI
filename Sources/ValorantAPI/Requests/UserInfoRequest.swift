@@ -3,7 +3,10 @@ import Protoquest
 
 extension ValorantClient {
 	public func getUsers(for ids: [User.ID]) async throws -> [User] {
-		try await send(UserInfoRequest(body: ids))
+		try await send(UserInfoRequest(body: ids)).compactMap {
+			guard let id = User.ID($0.id) else { return nil } // empty otherwise
+			return .init(id: id, gameName: $0.name, tagLine: $0.tag)
+		}
 	}
 }
 
@@ -14,5 +17,16 @@ private struct UserInfoRequest: JSONJSONRequest, GameDataRequest {
 	
 	var body: [User.ID]
 	
-	typealias Response = [User]
+	typealias Response = [OptionalUser]
+	
+	struct OptionalUser: Decodable {
+		var id: String // empty for users who have never played valorant
+		var name, tag: String
+		
+		private enum CodingKeys: String, CodingKey {
+			case id = "Subject"
+			case name = "GameName"
+			case tag = "TagLine"
+		}
+	}
 }
