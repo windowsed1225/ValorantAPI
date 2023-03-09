@@ -2,8 +2,8 @@ import Foundation
 import Protoquest
 
 extension ValorantClient {
-	public func getCareerSummary(userID: User.ID) async throws -> CareerSummary {
-		try await send(CareerSummaryRequest(userID: userID))
+	public func getCareerSummary(userID: User.ID? = nil) async throws -> CareerSummary {
+		try await send(CareerSummaryRequest(userID: userID ?? self.userID))
 	}
 }
 
