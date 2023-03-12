@@ -1,7 +1,7 @@
 import Foundation
 import ErgonomicCodable
 
-public struct ContractDetails: Codable {
+public struct ContractDetails: Equatable, Codable {
 	public var contracts: [Contract]
 	public var activeSpecialContract: Contract.ID?
 	public var missions: [Mission]
@@ -15,7 +15,7 @@ public struct ContractDetails: Codable {
 		case missionMetadata = "MissionMetadata"
 	}
 	
-	public struct MissionMetadata: Codable {
+	public struct MissionMetadata: Equatable, Codable {
 		/// `nil` when not completed
 		public var hasCompletedNewPlayerExperience: Bool?
 		/// The activation date for the last set of weeklies the user has completed.
@@ -32,7 +32,7 @@ public struct ContractDetails: Codable {
 	}
 }
 
-public struct Contract: Codable, Identifiable {
+public struct Contract: Equatable, Codable, Identifiable {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 	public var id: ID
 	
@@ -56,7 +56,7 @@ public struct Contract: Codable, Identifiable {
 		case progressionTowardsNextLevel = "ProgressionTowardsNextLevel"
 	}
 	
-	public struct Progression: Codable {
+	public struct Progression: Equatable, Codable {
 		public var totalEarned: Int
 		@StringKeyedDictionary
 		public var highestRewardedLevel: [LowercaseUUID: RewardedLevel]
@@ -66,7 +66,7 @@ public struct Contract: Codable, Identifiable {
 			case highestRewardedLevel = "HighestRewardedLevel"
 		}
 		
-		public struct RewardedLevel: Codable {
+		public struct RewardedLevel: Equatable, Codable {
 			public var amount: Int
 			public var version: Int
 			
@@ -82,7 +82,7 @@ public extension Contract.ID {
 	static let freeAgents = Self("a3dd5293-4b3d-46de-a6d7-4493f0530d9b")!
 }
 
-public struct Mission: Codable, Identifiable {
+public struct Mission: Equatable, Codable, Identifiable {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 	public var id: ID
 	
