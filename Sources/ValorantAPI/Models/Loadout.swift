@@ -112,12 +112,13 @@ public struct Loadout: Codable {
 		public struct Skin: Codable {
 			public var skin: Weapon.Skin.ID
 			public var level: Weapon.Skin.Level.ID
-			public var chroma: Weapon.Skin.Chroma.ID
+			/// can be nil for freshly-bought lvl1 skins!
+			public var chroma: Weapon.Skin.Chroma.ID?
 			
 			public init(
 				skin: Weapon.Skin.ID,
 				level: Weapon.Skin.Level.ID,
-				chroma: Weapon.Skin.Chroma.ID
+				chroma: Weapon.Skin.Chroma.ID?
 			) {
 				self.skin = skin
 				self.level = level
