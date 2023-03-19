@@ -22,6 +22,37 @@ public struct MatchDetails: Codable, Identifiable {
 	}
 }
 
+extension MatchDetails {
+	/// - returns (hardcoded) information on round structure, if game mode is known to work in rounds
+	public var roundStructure: RoundStructure? {
+		switch matchInfo.modeID {
+		case .standard:
+			return .init(roundsPerHalf: 12, hasEqualOvertime: true)
+		case .spikeRush:
+			return .init(roundsPerHalf: 3)
+		case .replication, .swiftplay:
+			return .init(roundsPerHalf: 4)
+		default:
+			return nil
+		}
+	}
+	
+	public struct RoundStructure {
+		public var roundsPerHalf: Int
+		public var hasEqualOvertime = false
+		
+		public func areRolesSwapped(inRound round: Int) -> Bool {
+			if round < roundsPerHalf * 2 {
+				return round >= roundsPerHalf
+			} else if hasEqualOvertime {
+				return round % 2 == 1
+			} else {
+				return true
+			}
+		}
+	}
+}
+
 public protocol BasicMatchInfo {
 	var id: Match.ID { get }
 	var provisioningFlowID: ProvisioningFlow.ID { get }
