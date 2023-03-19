@@ -64,7 +64,7 @@ public struct MatchInfo: Codable, Identifiable, BasicMatchInfo {
 	}
 }
 
-public struct Team: Codable {
+public struct Team: Identifiable, Codable {
 	public typealias ID = ObjectID<Self, String>
 	
 	public var id: ID
@@ -82,9 +82,9 @@ public struct Team: Codable {
 }
 
 public extension Team.ID {
-	static let blue = Self("Blue")
-	static let red = Self("Red")
-	static let neutral = Self("Neutral")
+	static let blue = Self("Blue")!
+	static let red = Self("Red")!
+	static let neutral = Self("Neutral")!
 }
 
 public struct RoundResult: Codable {
