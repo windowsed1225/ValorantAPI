@@ -2,15 +2,17 @@ import Foundation
 import HandyOperators
 
 public struct QueueID: SimpleRawWrapper, LosslessStringConvertible {
+	/// ordered loosely by similarity, starting with competitive
 	public static let knownQueues: [Self] = [
-		.unrated,
 		.competitive,
-		.spikeRush,
-		.deathmatch,
-		.escalation,
-		.snowballFight,
-		.replication,
+		.unrated,
 		.swiftplay,
+		.spikeRush,
+		.replication,
+		.escalation,
+		.deathmatch,
+		.snowballFight,
+		.newMap,
 		.custom,
 	]
 	
@@ -22,6 +24,8 @@ public struct QueueID: SimpleRawWrapper, LosslessStringConvertible {
 	public static let snowballFight = Self("snowball")
 	public static let replication = Self("onefa")
 	public static let swiftplay = Self("swiftplay")
+	/// used since Breeze to introduce new maps, display name always changing
+	public static let newMap = Self("newmap")
 	public static let custom = Self("custom")
 	
 	public var rawValue: String
