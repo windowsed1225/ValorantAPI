@@ -25,11 +25,11 @@ public struct CompetitiveUpdate: Codable, Identifiable {
 		id: Match.ID,
 		mapID: MapID?,
 		startTime: Date,
-		tierBeforeUpdate: Int,
-		tierAfterUpdate: Int,
-		tierProgressBeforeUpdate: Int,
-		tierProgressAfterUpdate: Int,
-		ratingEarned: Int,
+		tierBeforeUpdate: Int = 0,
+		tierAfterUpdate: Int = 0,
+		tierProgressBeforeUpdate: Int = 0,
+		tierProgressAfterUpdate: Int = 0,
+		ratingEarned: Int = 0,
 		performanceBonus: Int = 0,
 		afkPenalty: Int = 0
 	) {
