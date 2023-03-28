@@ -17,8 +17,11 @@ public struct CompetitiveUpdate: Codable, Identifiable {
 	public var isRanked: Bool { tierAfterUpdate != 0 }
 	public var isDodge: Bool { mapID == nil }
 	
+	/// - note: "elo" values are wrong for immortal+ in episode 2 and later, where they were changed so tier progress is relative to immortal 1 rather than each individual rank, but still useful.
 	public var eloChange: Int { eloAfterUpdate - eloBeforeUpdate }
+	/// - note: "elo" values are wrong for immortal+ in episode 2 and later, where they were changed so tier progress is relative to immortal 1 rather than each individual rank, but still useful.
 	public var eloBeforeUpdate: Int { tierBeforeUpdate * 100 + tierProgressBeforeUpdate }
+	/// - note: "elo" values are wrong for immortal+ in episode 2 and later, where they were changed so tier progress is relative to immortal 1 rather than each individual rank, but still useful.
 	public var eloAfterUpdate: Int { tierAfterUpdate * 100 + tierProgressAfterUpdate }
 	
 	public init(
