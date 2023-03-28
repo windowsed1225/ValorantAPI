@@ -45,6 +45,12 @@ public struct CompetitiveUpdate: Codable, Identifiable {
 		self.afkPenalty = afkPenalty
 	}
 	
+	public func isContiguous(from previous: Self) -> Bool {
+		assert(startTime > previous.startTime)
+		return tierBeforeUpdate == previous.tierAfterUpdate
+		&& tierProgressBeforeUpdate == previous.tierProgressAfterUpdate
+	}
+	
 	private enum CodingKeys: String, CodingKey {
 		case id = "MatchID"
 		case mapID = "MapID"
