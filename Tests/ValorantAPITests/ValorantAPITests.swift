@@ -173,7 +173,7 @@ final class ValorantAPITests: XCTestCase {
 		
 		try await testCommunication {
 			let inventory = try await client.getInventory()
-			XCTAssertEqual(inventory.agentsIncludingStarters.count, 15)
+			XCTAssertEqual(inventory.agents.count, 15)
 		} expecting: {
 			ExpectedRequest(to: "https://pd.eu.a.pvp.net/store/v1/entitlements/3fa8598d-066e-5bdb-998c-74c015c5dba5")
 				.responseBody(fileNamed: "inventory")

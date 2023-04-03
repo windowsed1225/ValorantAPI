@@ -61,7 +61,7 @@ final class DecodingTests: XCTestCase {
 		encoder.outputFormatting = .prettyPrinted
 		let reencoded = String(bytes: try encoder.encode(inventory), encoding: .utf8)!
 		print(reencoded)
-		XCTAssertEqual(inventory.agentsIncludingStarters.count, 19)
+		XCTAssertEqual(inventory.agents.count, 19)
 	}
 	
 	func testDecodingLoadout() throws {

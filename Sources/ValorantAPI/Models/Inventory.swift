@@ -3,8 +3,9 @@ import Foundation
 public struct Inventory: Codable {
 	public static let starterAgents: Set<Agent.ID> = [.jett, .phoenix, .sova, .brimstone, .sage]
 	
+	public let purchasedAgents: Set<Agent.ID>
+	/// includes starter agents, unlike ``purchasedAgents``
 	public let agents: Set<Agent.ID>
-	public let agentsIncludingStarters: Set<Agent.ID>
 	public let cards: Set<PlayerCard.ID>
 	public let titles: Set<PlayerTitle.ID>
 	public let skinLevels: Set<Weapon.Skin.Level.ID>
@@ -26,7 +27,7 @@ public struct Inventory: Codable {
 		
 		// TODO: use InventoryItem protocol to gather these instead?
 		
-		agents = collectItems(.agents)
+		purchasedAgents = collectItems(.agents)
 		cards = collectItems(.cards)
 		titles = collectItems(.titles)
 		skinLevels = collectItems(.skinLevels)
@@ -37,8 +38,8 @@ public struct Inventory: Codable {
 			.reduce(into: [:]) { $0[$1.level, default: []].append($1.instance) }
 			?? [:]
 		
-		assert(agents.intersection(Self.starterAgents).isEmpty)
-		agentsIncludingStarters = agents.union(Self.starterAgents)
+		assert(purchasedAgents.intersection(Self.starterAgents).isEmpty)
+		agents = purchasedAgents.union(Self.starterAgents)
 	}
 	
 	public func owns<Item: InventoryItem, RawID: Hashable>(
@@ -66,7 +67,7 @@ public protocol InventoryItem {
 }
 
 extension Agent: InventoryItem {
-	public static let ownedItems = \Inventory.agentsIncludingStarters
+	public static let ownedItems = \Inventory.agents
 }
 
 extension PlayerCard: InventoryItem {
