@@ -50,12 +50,16 @@ final actor SessionHandler {
 				session = try await session <- {
 					try await $0.refreshAccessToken()
 				}
+				session.hasExpired = false
 				
 				waitingForSession.forEach { $0.resume() }
 			} catch {
 				waitingForSession.forEach { $0.resume(throwing: error) }
 				throw error
 			}
+		} catch APIError.sessionExpired {
+			session.hasExpired = true
+			throw APIError.sessionExpired
 		} catch {
 			throw APIError.sessionResumptionFailure(error)
 		}
