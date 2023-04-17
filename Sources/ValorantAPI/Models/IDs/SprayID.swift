@@ -15,17 +15,4 @@ public extension Spray.Slot.ID {
 	
 	/// all three spray slots in order (pre-, mid-, post-round)
 	static let inOrder = [preRound, midRound, postRound]
-	
-	var name: String {
-		switch self {
-		case .preRound:
-			return "pre-round"
-		case .midRound:
-			return "mid-round"
-		case .postRound:
-			return "post-round"
-		default:
-			return "slot"
-		}
-	}
 }
