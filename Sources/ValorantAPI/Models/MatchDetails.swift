@@ -230,7 +230,9 @@ public struct Kill: Codable {
 	public var roundTimeMillis: Int
 	public var gameTimeMillis: Int
 	
-	public var killer, victim: Player.ID
+	@SpecialOptional(.emptyString)
+	public var killer: Player.ID?
+	public var victim: Player.ID
 	public var assistants: [Player.ID]
 	
 	public var victimPosition: Position
