@@ -8,7 +8,8 @@ public enum APIError: Error {
 	/// This likely means your access token has expired.
 	case tokenFailure(message: String)
 	/// The session has expired or otherwise been invalidated. You'll need to reauthenticate.
-	case sessionExpired
+	/// - Parameter mfaRequired: true if the session tried to reauth but failed due to an MFA code being required.
+	case sessionExpired(mfaRequired: Bool)
 	/// The session could not be resumed, though it was not recognized as clearly being expired—it's possible Riot's API has changed and this code no longer works with it. Reauthenticating could still fix it though!
 	case sessionResumptionFailure(Error)
 	/// The service is currently down for scheduled maintenance.

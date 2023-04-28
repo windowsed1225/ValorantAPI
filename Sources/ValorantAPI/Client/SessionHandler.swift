@@ -48,7 +48,9 @@ final actor SessionHandler {
 		do {
 			do {
 				session = try await session <- {
-					try await $0.refreshAccessToken()
+					try await $0.refreshAccessToken { _ in
+						throw APIError.sessionExpired(mfaRequired: true)
+					}
 				}
 				session.hasExpired = false
 				
@@ -57,9 +59,9 @@ final actor SessionHandler {
 				waitingForSession.forEach { $0.resume(throwing: error) }
 				throw error
 			}
-		} catch APIError.sessionExpired {
+		} catch APIError.sessionExpired(let mfaRequired) {
 			session.hasExpired = true
-			throw APIError.sessionExpired
+			throw APIError.sessionExpired(mfaRequired: mfaRequired)
 		} catch {
 			throw APIError.sessionResumptionFailure(error)
 		}

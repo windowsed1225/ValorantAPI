@@ -11,7 +11,7 @@ extension AuthClient {
 		switch cookiesResponse.type {
 		case .auth:
 			guard case .allow(let credentials, _) = loginBehavior else {
-				throw APIError.sessionExpired
+				throw APIError.sessionExpired(mfaRequired: false)
 			}
 			
 			if let error = cookiesResponse.error {
@@ -52,7 +52,7 @@ extension AuthClient {
 			throw AuthHandlingError.unexpectedError(response.error)
 		case .multifactor:
 			guard case .allow(_, let multifactorHandler) = loginBehavior else {
-				throw APIError.sessionExpired
+				throw APIError.sessionExpired(mfaRequired: false)
 			}
 			// error is "multifactor_attempt_failed" if incorrect code given
 			guard let info = response.multifactor
