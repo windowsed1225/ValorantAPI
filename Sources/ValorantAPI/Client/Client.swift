@@ -49,8 +49,10 @@ public struct ValorantClient {
 	}
 	
 	/// Calls the given callback whenever the session is updated, e.g. when it has expired and is resumed or restarted.
-	public func onSessionUpdate(call handle: @escaping ((APISession) -> Void)) -> AnyCancellable {
-		sessionHandler.sessionSubject.sink(receiveValue: handle)
+	public func onSessionUpdate(call handle: @escaping @MainActor (APISession) -> Void) -> AnyCancellable {
+		sessionHandler.sessionSubject.sink { session in
+			Task { await handle(session) }
+		}
 	}
 	
 	func send<R: ValorantRequest>(_ request: R) async throws -> R.Response {
