@@ -13,6 +13,7 @@ public struct QueueID: SimpleRawWrapper, LosslessStringConvertible {
 		.deathmatch,
 		.snowballFight,
 		.newMap,
+		.premier,
 		.custom,
 	]
 	
@@ -26,6 +27,7 @@ public struct QueueID: SimpleRawWrapper, LosslessStringConvertible {
 	public static let swiftplay = Self("swiftplay")
 	/// used since Breeze to introduce new maps, display name always changing
 	public static let newMap = Self("newmap")
+	public static let premier = Self("premier")
 	public static let custom = Self("custom")
 	
 	public var rawValue: String
