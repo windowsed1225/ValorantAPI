@@ -126,7 +126,7 @@ public struct StoreBundle: Identifiable, Codable {
 		case items = "Items"
 	}
 	
-	public struct Item: Codable {
+	public struct Item: Codable, Identifiable {
 		public var info: Info
 		public var basePrice: Int
 		public var currencyID: Currency.ID
@@ -134,6 +134,10 @@ public struct StoreBundle: Identifiable, Codable {
 		public var discount: Double
 		public var discountedPrice: Int
 		public var isPromoItem: Bool
+		
+		public var id: some Hashable {
+			info.itemID
+		}
 		
 		private enum CodingKeys: String, CodingKey {
 			case info = "Item"
@@ -144,9 +148,8 @@ public struct StoreBundle: Identifiable, Codable {
 			case isPromoItem = "IsPromoItem"
 		}
 		
-		public struct Info: Codable {
-			// TODO: type IDs
-			public var itemTypeID: LowercaseUUID
+		public struct Info: Codable, _UntypedItem {
+			public var itemTypeID: ItemType.ID
 			public var itemID: LowercaseUUID
 			public var amount: Int
 			
@@ -179,9 +182,8 @@ public struct StoreOffer: Identifiable, Codable {
 		case rewards = "Rewards"
 	}
 	
-	public struct Reward: Codable {
-		// TODO: type IDs
-		public var itemTypeID: LowercaseUUID
+	public struct Reward: Codable, _UntypedItem {
+		public var itemTypeID: ItemType.ID
 		public var itemID: LowercaseUUID
 		public var quantity: Int
 		
@@ -190,6 +192,25 @@ public struct StoreOffer: Identifiable, Codable {
 			case itemID = "ItemID"
 			case quantity = "Quantity"
 		}
+	}
+}
+
+public protocol _UntypedItem {
+	var itemTypeID: ItemType.ID { get }
+	var itemID: LowercaseUUID { get }
+}
+
+public extension _UntypedItem {
+	var agent: Agent.ID? { typed() }
+	var card: PlayerCard.ID? { typed() }
+	var title: PlayerTitle.ID? { typed() }
+	var skinLevel: Weapon.Skin.Level.ID? { typed() }
+	var skinChroma: Weapon.Skin.Chroma.ID? { typed() }
+	var spray: Spray.ID? { typed() }
+	var buddy: Weapon.Buddy.Level.ID? { typed() }
+	
+	func typed<Item: InventoryItem>(as _: Item.Type = Item.self) -> Item.ID? {
+		itemTypeID == Item.typeID ? .init(rawID: itemID) : nil
 	}
 }
 

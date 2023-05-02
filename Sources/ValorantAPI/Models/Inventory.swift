@@ -20,12 +20,18 @@ public struct Inventory: Codable {
 				.map { ($0.id, $0) }
 		)
 		
-		func collectItems<ID>(_ type: ItemCollection.ID) -> Set<ID>
+		func collectItems<ID>(_ type: ItemType.ID) -> Set<ID>
 		where ID: ObjectIDProtocol, ID.RawID == LowercaseUUID {
 			Set(collections[type]?.items.lazy.map(\.id).map(ID.init(rawID:)) ?? [])
 		}
 		
-		// TODO: use InventoryItem protocol to gather these instead?
+		func collectItems<Item: InventoryItem>() -> Set<Item.ID> {
+			let ids = collections[Item.typeID]?.items
+				.lazy
+				.map(\.id)
+				.map(Item.ID.init(rawID:))
+			return ids.map(Set.init) ?? []
+		}
 		
 		purchasedAgents = collectItems(.agents)
 		cards = collectItems(.cards)
@@ -42,9 +48,7 @@ public struct Inventory: Codable {
 		agents = purchasedAgents.union(Self.starterAgents)
 	}
 	
-	public func owns<Item: InventoryItem, RawID: Hashable>(
-		_ itemID: ObjectID<Item, RawID>
-	) -> Bool where Item.ID == ObjectID<Item, RawID> { // don't think about it too hard…
+	public func owns<Item: InventoryItem>(_ itemID: Item.ID) -> Bool {
 		self[keyPath: Item.ownedItems].contains(itemID)
 	}
 	 
@@ -52,7 +56,7 @@ public struct Inventory: Codable {
 		var level: Weapon.Buddy.Level.ID
 		var instance: Weapon.Buddy.Instance.ID
 		
-		init(_ item: Item) {
+		init(_ item: ItemCollection.Item) {
 			level = .init(rawID: item.id)
 			instance = .init(rawID: item.instanceID!)
 		}
@@ -61,40 +65,53 @@ public struct Inventory: Codable {
 
 public protocol InventoryItem {
 	associatedtype OwnedItems: Collection<ID>
-	associatedtype ID: Hashable
+	typealias ID = ObjectID<Self, LowercaseUUID>
 	
 	static var ownedItems: KeyPath<Inventory, OwnedItems> { get }
+	static var typeID: ItemType.ID { get }
 }
 
 extension Agent: InventoryItem {
 	public static let ownedItems = \Inventory.agents
+	public static let typeID = ItemType.ID.agents
 }
 
 extension PlayerCard: InventoryItem {
 	public static let ownedItems = \Inventory.cards
+	public static let typeID = ItemType.ID.cards
 }
 
 extension PlayerTitle: InventoryItem {
 	public static let ownedItems = \Inventory.titles
+	public static let typeID = ItemType.ID.titles
 }
 
 extension Weapon.Skin.Level: InventoryItem {
 	public static let ownedItems = \Inventory.skinLevels
+	public static let typeID = ItemType.ID.skinLevels
 }
 
 extension Weapon.Skin.Chroma: InventoryItem {
 	public static let ownedItems = \Inventory.skinChromas
+	public static let typeID = ItemType.ID.skinChromas
 }
 
 extension Spray: InventoryItem {
 	public static let ownedItems = \Inventory.sprays
+	public static let typeID = ItemType.ID.sprays
 }
 
 extension Weapon.Buddy.Level: InventoryItem {
 	public static let ownedItems = \Inventory.buddies.keys
+	public static let typeID = ItemType.ID.buddies
 }
 
-private extension ItemCollection.ID {
+/// agent, card, title, etc.
+public enum ItemType {
+	public typealias ID = ObjectID<Self, LowercaseUUID>
+}
+
+public extension ItemType.ID {
 	static let agents = Self("01bb38e1-da47-4e6a-9b3d-945fe4655707")!
 	static let cards = Self("3f296c07-64c3-494c-923b-fe692a4fa1bd")!
 	static let titles = Self("de7caa6b-adf7-4588-bbd1-143831e786c6")!
@@ -114,23 +131,21 @@ struct APIInventory: Decodable {
 }
 
 private struct ItemCollection: Decodable {
-	typealias ID = ObjectID<Self, LowercaseUUID>
-	
-	var id: ID
+	var id: ItemType.ID
 	var items: [Item]
 	
 	private enum CodingKeys: String, CodingKey {
 		case id = "ItemTypeID"
 		case items = "Entitlements"
 	}
-}
-
-private struct Item: Decodable {
-	var id: LowercaseUUID
-	var instanceID: LowercaseUUID?
 	
-	private enum CodingKeys: String, CodingKey {
-		case id = "ItemID"
-		case instanceID = "InstanceID"
+	struct Item: Decodable {
+		var id: LowercaseUUID
+		var instanceID: LowercaseUUID?
+		
+		private enum CodingKeys: String, CodingKey {
+			case id = "ItemID"
+			case instanceID = "InstanceID"
+		}
 	}
 }
