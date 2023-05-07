@@ -128,10 +128,12 @@ extension APISession {
 		self.cookies = client.cookies().map(Cookie.init)
 	}
 	
-	mutating func refreshAccessToken(multifactorHandler: @escaping MultifactorHandler) async throws {
+	mutating func refreshAccessToken(multifactorHandler: MultifactorHandler?) async throws {
 		let client = await AuthClient()
 		client.setCookies(cookies.map(\.httpCookie))
-		accessToken = try await client.getAccessToken(loginBehavior: .allow(credentials, multifactorHandler))
+		accessToken = try await client.getAccessToken(
+			loginBehavior: multifactorHandler.map { .allow(credentials, $0) } ?? .disallow
+		)
 		
 		cookies = client.cookies().map(Cookie.init)
 	}

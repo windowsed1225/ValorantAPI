@@ -48,6 +48,10 @@ public struct ValorantClient {
 			}
 	}
 	
+	public func setReauthBehavior(_ behavior: ReauthBehavior) async {
+		await sessionHandler.setReauthBehavior(behavior)
+	}
+	
 	/// Calls the given callback whenever the session is updated, e.g. when it has expired and is resumed or restarted.
 	public func onSessionUpdate(call handle: @escaping @MainActor (APISession) -> Void) -> AnyCancellable {
 		sessionHandler.sessionSubject.sink { session in
@@ -91,6 +95,16 @@ public struct ValorantClient {
 		} else {
 			return self
 		}
+	}
+	
+	/// what to do when a session has expired
+	public enum ReauthBehavior {
+		/// don't try anything, just fail
+		case noReauth
+		/// try to reauthenticate automatically with the stored credentials, failing & sending a non-user-initiated MFA code if that's required
+		case failOnMFA
+		/// try to reauthenticate automatically with the stored credentials, handling an MFA request as specified
+		case full(MultifactorHandler)
 	}
 }
 
