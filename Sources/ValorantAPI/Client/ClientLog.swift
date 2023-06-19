@@ -11,10 +11,13 @@ public struct ClientLog {
 	}
 	
 	public mutating func logExchange(request: URLRequest, result: Protoresult) {
+		let exchange = Exchange(request: request, result: result)
+		guard !exchange.wasCancelled else { return }
+		
 		if exchanges.count >= maxCount {
 			exchanges.removeFirst()
 		}
-		exchanges.append(.init(request: request, result: result))
+		exchanges.append(exchange)
 	}
 	
 	public struct Exchange: Identifiable {
@@ -25,6 +28,16 @@ public struct ClientLog {
 		
 		public var statusCode: Int? {
 			try? result.get().httpMetadata?.statusCode
+		}
+		
+		var wasCancelled: Bool {
+			// hide cancellation errors
+			guard
+				case .failure(let error) = result,
+				let urlError = error as? URLError,
+				urlError.code == .cancelled
+			else { return false }
+			return true
 		}
 	}
 }
