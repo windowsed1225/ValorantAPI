@@ -26,9 +26,18 @@ final class ValorantAPITests: XCTestCase {
 				.put()
 				.responseBody(fileNamed: "responses/access_token")
 			
-			ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
-				.post()
-				.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
+			ExpectedRequest.Group {
+				ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
+					.post()
+					.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
+				
+				ExpectedRequest(to: "https://auth.riotgames.com/userinfo")
+					.responseBody(#"{ "sub": "3fa8598d-066e-5bdb-998c-74c015c5dba5" }"#)
+				
+				ExpectedRequest(to: "https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant")
+					.put()
+					.responseBody(#"{ "affinities": { "live": "eu" }, "token": "" }"#)
+			}
 		}
 	}
 	
@@ -62,9 +71,18 @@ final class ValorantAPITests: XCTestCase {
 				.put()
 				.responseBody(fileNamed: "responses/access_token")
 			
-			ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
-				.post()
-				.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
+			ExpectedRequest.Group {
+				ExpectedRequest(to: "https://entitlements.auth.riotgames.com/api/token/v1")
+					.post()
+					.responseBody(#"{ "entitlements_token": "ENTITLEMENTS_TOKEN" }"#)
+				
+				ExpectedRequest(to: "https://auth.riotgames.com/userinfo")
+					.responseBody(#"{ "sub": "3fa8598d-066e-5bdb-998c-74c015c5dba5" }"#)
+				
+				ExpectedRequest(to: "https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant")
+					.put()
+					.responseBody(#"{ "affinities": { "live": "eu" }, "token": "" }"#)
+			}
 		}
 	}
 	
@@ -173,7 +191,7 @@ final class ValorantAPITests: XCTestCase {
 		
 		try await testCommunication {
 			let inventory = try await client.getInventory()
-			XCTAssertEqual(inventory.agents.count, 15)
+			XCTAssertEqual(inventory.agents.count, 19)
 		} expecting: {
 			ExpectedRequest(to: "https://pd.eu.a.pvp.net/store/v1/entitlements/3fa8598d-066e-5bdb-998c-74c015c5dba5")
 				.responseBody(fileNamed: "inventory")

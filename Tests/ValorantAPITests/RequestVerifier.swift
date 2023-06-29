@@ -5,9 +5,10 @@ import ArrayBuilder
 /// Verifies that the given block causes requests in the given order. Make sure that all communication runs via ``verifyingURLSession``.
 func testCommunication<T>(
 	running block: () async throws -> T,
-	@ArrayBuilder<ExpectedRequest> expecting order: () throws -> [ExpectedRequest]
+	file: StaticString = #filePath, line: UInt = #line,
+	@ArrayBuilder<any ExpectationEntry> expecting order: () throws -> [any ExpectationEntry]
 ) async rethrows -> T {
-	verifier = .init(expecting: try order())
+	verifier = .init(expecting: try order(), file: file, line: line)
 	defer { verifier.finalize() }
 	
 	return try await block()
@@ -25,23 +26,45 @@ func verifyingURLSession() -> URLSession {
 private var verifier: RequestVerifier!
 
 private final class RequestVerifier {
-	var expectedOrder: [ExpectedRequest]
+	var expectedOrder: [any ExpectationEntry]
 	var currentPosition = 0
+	var file: StaticString
+	var line: UInt
 	
-	init(expecting expectedOrder: [ExpectedRequest]) {
+	init(expecting expectedOrder: [any ExpectationEntry], file: StaticString = #filePath, line: UInt = #line) {
 		self.expectedOrder = expectedOrder
+		self.file = file
+		self.line = line
 	}
 	
-	func next() -> ExpectedRequest {
+	func validate(_ request: URLRequest) -> ValidationResult {
+		XCTAssert(
+			currentPosition < expectedOrder.endIndex,
+			"Too many requests sent!",
+			file: file, line: line
+		)
+		let result = expectedOrder[currentPosition].validate(request)
+		if result.isExhausted {
+			currentPosition += 1
+		}
+		return result
+	}
+	
+	func next() -> any ExpectationEntry {
 		defer { currentPosition += 1 }
-		XCTAssert(currentPosition < expectedOrder.endIndex, "Too many requests sent!")
+		XCTAssert(
+			currentPosition < expectedOrder.endIndex,
+			"Too many requests sent!",
+			file: file, line: line
+		)
 		return expectedOrder[currentPosition < expectedOrder.endIndex ? currentPosition : 0]
 	}
 	
 	func finalize() {
 		XCTAssertEqual(
 			currentPosition, expectedOrder.endIndex,
-			"Not all expected requests were executed!"
+			"Not all expected requests were executed!",
+			file: file, line: line
 		)
 	}
 }
@@ -51,55 +74,15 @@ private final class VerifyingProtocol: URLProtocol {
 	
 	override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 	
-	let expected = verifier.next()
-	
 	override func startLoading() {
-		print("\texpecting \(expected)")
+		let result = verifier.validate(request)
 		
-		XCTAssertEqual(request.url!, expected.url)
-		XCTAssertEqual(request.httpMethod!, expected.method)
-		
-		if let expectedBody = expected.requestBody {
-			let actualBody = request.httpBody ?? Data(reading: request.httpBodyStream!)
-			XCTAssertEqual(actualBody.utf8String(), expectedBody.utf8String())
-		}
-		
-		let response = HTTPURLResponse(
-			url: expected.url,
-			statusCode: expected.responseCode,
-			httpVersion: nil,
-			headerFields: nil
-		)!
-		
-		client!.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-		if let body = expected.responseBody {
+		client!.urlProtocol(self, didReceive: result.response, cacheStoragePolicy: .notAllowed)
+		if let body = result.body {
 			client!.urlProtocol(self, didLoad: body)
 		}
 		client!.urlProtocolDidFinishLoading(self)
 	}
 	
 	override func stopLoading() {}
-}
-
-private extension Data {
-	func utf8String() -> String {
-		String(bytes: self, encoding: .utf8)!
-	}
-	
-	// why this isn't included is beyond me
-	init(reading stream: InputStream) {
-		self.init()
-		
-		stream.open()
-		defer { stream.close() }
-		
-		let bufferSize = 1024
-		let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
-		defer { buffer.deallocate() }
-		
-		while stream.hasBytesAvailable {
-			let bytesRead = stream.read(buffer, maxLength: bufferSize)
-			append(buffer, count: bytesRead)
-		}
-	}
 }
