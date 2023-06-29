@@ -86,7 +86,8 @@ public struct Storefront: Codable {
 	}
 	
 	public struct AccessoryStore: Codable {
-		public var offers: [Offer]
+		/// `nil` if someone already owns all accessories
+		public var offers: [Offer]?
 		public var remainingDuration: TimeInterval
 		
 		private enum CodingKeys: String, CodingKey {
