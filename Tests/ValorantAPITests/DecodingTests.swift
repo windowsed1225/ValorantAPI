@@ -79,7 +79,8 @@ final class DecodingTests: XCTestCase {
 	func testDecodingStorefront() throws {
 		let storefront = try decode(Storefront.self, fromJSONNamed: "storefront")
 		dump(storefront)
-		XCTAssertEqual(storefront.skinsPanelLayout.singleItemOffers.count, 4)
+		XCTAssertEqual(storefront.dailySkinStore.offers.count, 4)
+		XCTAssertEqual(storefront.accessoryStore.offers.count, 4)
 		XCTAssertNotNil(storefront.nightMarket)
 	}
 	

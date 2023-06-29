@@ -20,7 +20,7 @@ private struct StorefrontRequest: GetJSONRequest, GameDataRequest {
 	var playerID: Player.ID
 	
 	var path: String {
-		"/store/v2/storefront/\(playerID)"
+		"/store/v3/storefront/\(playerID)"
 	}
 	
 	typealias Response = Storefront
@@ -53,12 +53,14 @@ struct StoreOffersRequest: GetJSONRequest, GameDataRequest {
 
 public struct Storefront: Codable {
 	public var featuredBundle: FeaturedBundle
-	public var skinsPanelLayout: SkinsPanelLayout
+	public var dailySkinStore: DailySkinStore
+	public var accessoryStore: AccessoryStore
 	public var nightMarket: NightMarket?
 	
 	private enum CodingKeys: String, CodingKey {
 		case featuredBundle = "FeaturedBundle"
-		case skinsPanelLayout = "SkinsPanelLayout"
+		case dailySkinStore = "SkinsPanelLayout"
+		case accessoryStore = "AccessoryStore"
 		case nightMarket = "BonusStore"
 	}
 	
@@ -70,13 +72,33 @@ public struct Storefront: Codable {
 		}
 	}
 	
-	public struct SkinsPanelLayout: Codable {
-		public var singleItemOffers: [StoreOffer.ID]
+	public struct DailySkinStore: Codable {
+		public var offers: [StoreOffer]
 		public var remainingDuration: TimeInterval
 		
 		private enum CodingKeys: String, CodingKey {
-			case singleItemOffers = "SingleItemOffers"
+			case offers = "SingleItemStoreOffers"
 			case remainingDuration = "SingleItemOffersRemainingDurationInSeconds"
+		}
+	}
+	
+	public struct AccessoryStore: Codable {
+		public var offers: [Offer]
+		public var remainingDuration: TimeInterval
+		
+		private enum CodingKeys: String, CodingKey {
+			case offers = "AccessoryStoreOffers"
+			case remainingDuration = "AccessoryStoreRemainingDurationInSeconds"
+		}
+		
+		public struct Offer: Codable {
+			public var offer: StoreOffer
+			public var contractID: Contract.ID
+			
+			private enum CodingKeys: String, CodingKey {
+				case offer = "Offer"
+				case contractID = "ContractID"
+			}
 		}
 	}
 	
