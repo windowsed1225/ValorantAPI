@@ -16,13 +16,16 @@ extension ValorantClient {
 	}
 }
 
-private struct StorefrontRequest: GetJSONRequest, GameDataRequest {
+private struct StorefrontRequest: JSONJSONRequest, GameDataRequest {
 	var playerID: Player.ID
 	
 	var path: String {
 		"/store/v3/storefront/\(playerID)"
 	}
 	
+	var body: Body { .init() }
+	
+	struct Body: Encodable {}
 	typealias Response = Storefront
 }
 
