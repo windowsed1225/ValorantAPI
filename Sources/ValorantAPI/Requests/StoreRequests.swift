@@ -173,15 +173,15 @@ public struct StoreBundle: Identifiable, Codable {
 			case isPromoItem = "IsPromoItem"
 		}
 		
-		public struct Info: Codable, _UntypedItem {
+		public struct Info: Codable, UntypedStoreItem {
 			public var itemTypeID: ItemType.ID
 			public var itemID: LowercaseUUID
-			public var amount: Int
+			public var count: Int
 			
 			private enum CodingKeys: String, CodingKey {
 				case itemTypeID = "ItemTypeID"
 				case itemID = "ItemID"
-				case amount = "Amount"
+				case count = "Amount"
 			}
 		}
 	}
@@ -207,25 +207,26 @@ public struct StoreOffer: Identifiable, Codable {
 		case rewards = "Rewards"
 	}
 	
-	public struct Reward: Codable, _UntypedItem {
+	public struct Reward: Codable, UntypedStoreItem {
 		public var itemTypeID: ItemType.ID
 		public var itemID: LowercaseUUID
-		public var quantity: Int
+		public var count: Int
 		
 		private enum CodingKeys: String, CodingKey {
 			case itemTypeID = "ItemTypeID"
 			case itemID = "ItemID"
-			case quantity = "Quantity"
+			case count = "Quantity"
 		}
 	}
 }
 
-public protocol _UntypedItem {
+public protocol UntypedStoreItem {
 	var itemTypeID: ItemType.ID { get }
 	var itemID: LowercaseUUID { get }
+	var count: Int { get }
 }
 
-public extension _UntypedItem {
+public extension UntypedStoreItem {
 	var agent: Agent.ID? { typed() }
 	var card: PlayerCard.ID? { typed() }
 	var title: PlayerTitle.ID? { typed() }
@@ -260,4 +261,5 @@ public extension Currency.ID {
 	static let valorantPoints = Self("85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741")!
 	static let radianitePoints = Self("e59aa87c-4cbf-517a-5983-6e81511be9b7")!
 	static let freeAgents = Self("f08d4ae3-939c-4576-ab26-09ce1f23bb37")!
+	static let kingdomCredits = Self("85ca954a-41f2-ce94-9b45-8ca3dd39a00d")!
 }
