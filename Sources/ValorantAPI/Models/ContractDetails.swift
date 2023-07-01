@@ -102,3 +102,49 @@ public struct Mission: Equatable, Codable, Identifiable {
 public enum Objective {
 	public typealias ID = ObjectID<Self, LowercaseUUID>
 }
+
+public struct AgentContractProgress: Codable {
+	var counters: [Counter]
+	
+	private enum CodingKeys: String, CodingKey {
+		case counters = "Counters"
+	}
+	
+	struct Counter: Codable {
+		var id: ObjectID<Self, LowercaseUUID>
+		var value: Int
+		
+		private enum CodingKeys: String, CodingKey {
+			case id = "ID"
+			case value = "Value"
+		}
+	}
+}
+
+public struct DailyTicketProgress: Codable {
+	public static let zero = Self(
+		remainingTime: 0,
+		milestones: .init(repeating: .zero, count: 4)
+	)
+	
+	public var remainingTime: TimeInterval
+	public var milestones: [Milestone]
+	
+	private enum CodingKeys: String, CodingKey {
+		case remainingTime = "RemainingLifetimeSeconds"
+		case milestones = "Milestones"
+	}
+	
+	public struct Milestone: Codable {
+		public static let zero = Self(progress: 0, wasRedeemed: false)
+		
+		/// 0-4
+		public var progress: Int
+		public var wasRedeemed: Bool
+		
+		private enum CodingKeys: String, CodingKey {
+			case progress = "Progress"
+			case wasRedeemed = "BonusApplied"
+		}
+	}
+}

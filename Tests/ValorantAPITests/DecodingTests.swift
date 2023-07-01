@@ -34,6 +34,12 @@ final class DecodingTests: XCTestCase {
 		XCTAssertEqual(details.contracts.count, 40)
 	}
 	
+	func testDecodingDailyTicket() throws {
+		let ticket = try decode(DailyTicketProgress.self, fromJSONNamed: "daily_ticket")
+		//dump(details)
+		XCTAssertEqual(ticket.milestones.map(\.progress), [4, 3, 0, 0])
+	}
+	
 	func testDecodingLivePregameInfo() throws {
 		let pregameInfo = try decode(LivePregameInfo.self, fromJSONNamed: "pregame_match")
 		//dump(pregameInfo)
@@ -72,15 +78,16 @@ final class DecodingTests: XCTestCase {
 	
 	func testDecodingStoreOffers() throws {
 		let response = try decode(StoreOffersRequest.Response.self, fromJSONNamed: "store_offers")
-		dump(response)
-		XCTAssertEqual(response.offers.count, 398)
+		//dump(response)
+		print("total VP:", response.offers.map(\.cost[.valorantPoints]!).reduce(0, +))
+		XCTAssertEqual(response.offers.count, 597)
 	}
 	
 	func testDecodingStorefront() throws {
 		let storefront = try decode(Storefront.self, fromJSONNamed: "storefront")
 		dump(storefront)
 		XCTAssertEqual(storefront.dailySkinStore.offers.count, 4)
-		XCTAssertEqual(storefront.accessoryStore.offers.count, 4)
+		XCTAssertEqual(storefront.accessoryStore.offers!.count, 4)
 		XCTAssertNotNil(storefront.nightMarket)
 	}
 	
