@@ -13,8 +13,10 @@ extension ValorantClient {
 	}
 	
 	/// - Note: This request requires that you've set ``ValorantClient/clientVersion`` appropriately!
-	public func getDailyTicketProgress() async throws -> DailyTicketProgress {
-		try await send(DailyTicketRequest(playerID: userID)).dailyRewards
+	public func getDailyTicketProgress(autoRenew: Bool = true) async throws -> DailyTicketProgress {
+		try await autoRenew
+		? send(RenewDailyTicketRequest(playerID: userID)).dailyRewards
+		: send(DailyTicketRequest(playerID: userID)).dailyRewards
 	}
 	
 	/// - Note: This request requires that you've set ``ValorantClient/clientVersion`` appropriately!
@@ -68,11 +70,25 @@ private struct DailyTicketRequest: GetJSONRequest, GameDataRequest {
 		"/daily-ticket/v1/\(playerID)"
 	}
 	
-	struct Response: Codable {
-		var dailyRewards: DailyTicketProgress
-		
-		private enum CodingKeys: String, CodingKey {
-			case dailyRewards = "DailyRewards"
-		}
+	typealias Response = DailyTicketResponse
+}
+
+private struct RenewDailyTicketRequest: JSONJSONRequest, GameDataRequest {
+	var playerID: Player.ID
+	let body = Body()
+	
+	var path: String {
+		"/daily-ticket/v1/\(playerID)/renew"
+	}
+	
+	struct Body: Codable {}
+	typealias Response = DailyTicketResponse
+}
+
+struct DailyTicketResponse: Codable {
+	var dailyRewards: DailyTicketProgress
+	
+	private enum CodingKeys: String, CodingKey {
+		case dailyRewards = "DailyRewards"
 	}
 }
