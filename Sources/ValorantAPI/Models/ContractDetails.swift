@@ -140,7 +140,9 @@ public struct DailyTicketProgress: Codable {
 		
 		/// 0-4
 		public var progress: Int
+		/// honestly i can't figure out the logic behind when this is set to true vs left as false
 		public var wasRedeemed: Bool
+		public var isComplete: Bool { progress >= 4 }
 		
 		private enum CodingKeys: String, CodingKey {
 			case progress = "Progress"
